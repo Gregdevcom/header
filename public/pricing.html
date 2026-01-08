@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pricing | Header</title>
+    <link rel="icon" href="HeaDer.png" type="image/x-icon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+      :root {
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+        --primary-light: #3b82f6;
+        --dark: #0f172a;
+        --dark-soft: #1e293b;
+        --bg-gray: #f8fafc;
+        --border: #e2e8f0;
+        --text-gray: #64748b;
+        --text-light: #94a3b8;
+        --success: #10b981;
+        --success-light: #d1fae5;
+        --warning: #f59e0b;
+        --warning-light: #fef3c7;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: white;
+        color: var(--dark);
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      /* ===== NAVIGATION ===== */
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        padding: 0 40px;
+        height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.3s ease;
+      }
+
+      nav.scrolled {
+        height: 64px;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      .nav-logo {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--dark);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        z-index: 1001;
+      }
+
+      .nav-logo i {
+        font-size: 20px;
+        color: var(--primary);
+        margin-bottom: 8px;
+      }
+
+      .nav-center {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        list-style: none;
+        background: var(--bg-gray);
+        padding: 6px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+      }
+
+      .nav-links li a {
+        text-decoration: none;
+        color: var(--text-gray);
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: 10px 18px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        display: block;
+        white-space: nowrap;
+      }
+
+      .nav-links li a:hover {
+        color: var(--dark);
+        background: white;
+      }
+
+      .nav-links li a.active {
+        color: var(--primary);
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .nav-buttons {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        font-family: inherit;
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--dark);
+        white-space: nowrap;
+      }
+
+      .btn-ghost:hover {
+        background: var(--bg-gray);
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+      }
+
+      .btn-large {
+        padding: 14px 28px;
+        font-size: 1rem;
+      }
+
+      .btn-outline {
+        background: white;
+        color: var(--dark);
+        border: 2px solid var(--border);
+      }
+
+      .btn-outline:hover {
+        border-color: var(--dark);
+        background: var(--dark);
+        color: white;
+      }
+
+      /* Mobile Menu Button */
+      .mobile-menu-btn {
+        display: none;
+        width: 44px;
+        height: 44px;
+        border: none;
+        background: var(--bg-gray);
+        border-radius: 10px;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        z-index: 1001;
+        transition: all 0.2s ease;
+      }
+
+      .mobile-menu-btn:hover {
+        background: var(--border);
+      }
+
+      .mobile-menu-btn i {
+        font-size: 24px;
+        color: var(--dark);
+        transition: all 0.3s ease;
+      }
+
+      .mobile-menu-btn.active i.ph-list {
+        display: none;
+      }
+
+      .mobile-menu-btn.active i.ph-x {
+        display: block;
+      }
+
+      .mobile-menu-btn i.ph-x {
+        display: none;
+      }
+
+      /* Mobile Menu Overlay */
+      .mobile-menu-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 999;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+
+      .mobile-menu-overlay.active {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+
+      .mobile-menu {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 100%;
+        max-width: 320px;
+        height: 100vh;
+        background: white;
+        z-index: 1000;
+        padding: 100px 24px 40px;
+        transform: translateX(100%);
+        visibility: hidden;
+        pointer-events: none;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+          visibility 0s 0.4s;
+        box-shadow: -10px 0 40px rgba(0, 0, 0, 0.15);
+        overflow-y: auto;
+      }
+
+      .mobile-menu.active {
+        transform: translateX(0);
+        visibility: visible;
+        pointer-events: auto;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+          visibility 0s 0s;
+      }
+
+      .mobile-menu-links {
+        list-style: none;
+        margin-bottom: 32px;
+      }
+
+      .mobile-menu-links li {
+        margin-bottom: 8px;
+      }
+
+      .mobile-menu-links a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        color: var(--dark);
+        font-weight: 500;
+        font-size: 1.1rem;
+        padding: 16px 20px;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+      }
+
+      .mobile-menu-links a:hover {
+        background: var(--bg-gray);
+      }
+
+      .mobile-menu-links a.active {
+        background: linear-gradient(
+          135deg,
+          rgba(37, 99, 235, 0.1),
+          rgba(37, 99, 235, 0.05)
+        );
+        color: var(--primary);
+      }
+
+      .mobile-menu-links a i {
+        font-size: 22px;
+        width: 28px;
+        text-align: center;
+      }
+
+      .mobile-menu-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 24px 0;
+      }
+
+      .mobile-menu-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .mobile-menu-buttons .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 14px 20px;
+        font-size: 1rem;
+      }
+
+      .mobile-menu-buttons .btn-ghost {
+        border: 1px solid var(--border);
+      }
+
+      /* Mobile Menu Footer */
+      .mobile-menu-footer {
+        position: absolute;
+        bottom: 40px;
+        left: 24px;
+        right: 24px;
+      }
+
+      .mobile-menu-social {
+        display: none;
+        justify-content: center;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .mobile-menu-social a {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-gray);
+        border-radius: 10px;
+        color: var(--text-gray);
+        font-size: 20px;
+        transition: all 0.2s ease;
+      }
+
+      .mobile-menu-social a:hover {
+        background: var(--primary);
+        color: white;
+      }
+
+      .mobile-menu-copyright {
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--text-gray);
+      }
+
+      /* Body scroll lock when mobile menu is open */
+      body.menu-open {
+        overflow: hidden;
+      }
+
+      /* ===== HERO SECTION ===== */
+      .hero {
+        padding: 160px 40px 100px;
+        text-align: center;
+        background: linear-gradient(180deg, #f8fafc 0%, white 100%);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle at 30% 40%,
+          rgba(37, 99, 235, 0.03) 0%,
+          transparent 50%
+        );
+        animation: float 20s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translate(0, 0);
+        }
+        50% {
+          transform: translate(30px, 20px);
+        }
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 1;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: var(--success-light);
+        color: var(--success);
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 24px;
+      }
+
+      .hero h1 {
+        font-size: 3.5rem;
+        font-weight: 900;
+        line-height: 1.1;
+        margin-bottom: 24px;
+        background: linear-gradient(
+          135deg,
+          var(--dark) 0%,
+          var(--dark-soft) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .hero h1 span {
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--primary-light) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .hero p {
+        font-size: 1.25rem;
+        color: var(--text-gray);
+        max-width: 600px;
+        margin: 0 auto 16px;
+      }
+
+      .hero-sub {
+        font-size: 0.95rem !important;
+        color: var(--text-light) !important;
+      }
+
+      /* ===== TOGGLE ===== */
+      .billing-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        margin: 48px 0;
+      }
+
+      .billing-toggle span {
+        font-weight: 500;
+        color: var(--text-gray);
+        transition: color 0.2s;
+      }
+
+      .billing-toggle span.active {
+        color: var(--dark);
+      }
+
+      .toggle-switch {
+        width: 56px;
+        height: 30px;
+        background: var(--border);
+        border-radius: 50px;
+        position: relative;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .toggle-switch.active {
+        background: var(--primary);
+      }
+
+      .toggle-switch::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 24px;
+        height: 24px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.3s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .toggle-switch.active::after {
+        transform: translateX(26px);
+      }
+
+      .save-badge {
+        background: var(--warning-light);
+        color: var(--warning);
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      /* ===== PRICING CARDS ===== */
+      .pricing-section {
+        padding: 0 40px 100px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 32px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      .pricing-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 40px;
+        position: relative;
+        transition: all 0.3s;
+      }
+
+      .pricing-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+      }
+
+      .pricing-card.featured {
+        border: 2px solid var(--primary);
+        background: linear-gradient(180deg, #eff6ff 0%, white 30%);
+      }
+
+      .pricing-card.featured::before {
+        content: "";
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-light)
+        );
+        border-radius: 22px;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+
+      .pricing-card.featured:hover::before {
+        opacity: 0.1;
+      }
+
+      .popular-badge {
+        position: absolute;
+        top: -14px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--primary-dark) 100%
+        );
+        color: white;
+        padding: 6px 20px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+      }
+
+      .card-header {
+        text-align: center;
+        padding-bottom: 32px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 32px;
+      }
+
+      .plan-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin: 0 auto 16px;
+      }
+
+      .pricing-card:not(.featured) .plan-icon {
+        background: var(--bg-gray);
+        color: var(--text-gray);
+      }
+
+      .pricing-card.featured .plan-icon {
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--primary-dark) 100%
+        );
+        color: white;
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+      }
+
+      .plan-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .plan-description {
+        font-size: 0.9rem;
+        color: var(--text-gray);
+      }
+
+      .price-container {
+        text-align: center;
+        margin: 24px 0;
+      }
+
+      .price {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 4px;
+      }
+
+      .currency {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-top: 8px;
+      }
+
+      .amount {
+        font-size: 4rem;
+        font-weight: 800;
+        line-height: 1;
+        color: var(--dark);
+      }
+
+      .period {
+        font-size: 1rem;
+        color: var(--text-gray);
+        margin-top: auto;
+        margin-bottom: 8px;
+        margin-left: 4px;
+      }
+
+      .price-note {
+        font-size: 0.85rem;
+        color: var(--text-light);
+        margin-top: 8px;
+      }
+
+      .yearly-price {
+        display: none;
+      }
+
+      .yearly-price.show {
+        display: flex;
+      }
+
+      .monthly-price.hide {
+        display: none;
+      }
+
+      .features-list {
+        list-style: none;
+        margin-bottom: 32px;
+      }
+
+      .features-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--bg-gray);
+        font-size: 0.95rem;
+      }
+
+      .features-list li:last-child {
+        border-bottom: none;
+      }
+
+      .features-list i {
+        font-size: 18px;
+        margin-top: 2px;
+        flex-shrink: 0;
+      }
+
+      .features-list .ph-check-circle {
+        color: var(--success);
+      }
+
+      .features-list .ph-x-circle {
+        color: var(--text-light);
+      }
+
+      .feature-text {
+        flex: 1;
+      }
+
+      .feature-text strong {
+        color: var(--dark);
+      }
+
+      .feature-highlight {
+        background: var(--warning-light);
+        color: var(--warning);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        margin-left: 8px;
+      }
+
+      .card-cta {
+        width: 100%;
+        padding: 16px;
+        font-size: 1rem;
+        justify-content: center;
+      }
+
+      /* ===== COMPARISON TABLE ===== */
+      .comparison-section {
+        padding: 100px 40px;
+        background: var(--bg-gray);
+      }
+
+      .section-header {
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto 60px;
+      }
+
+      .section-header h2 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 16px;
+      }
+
+      .section-header p {
+        font-size: 1.1rem;
+        color: var(--text-gray);
+      }
+
+      .comparison-table {
+        max-width: 900px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+        border: 1px solid var(--border);
+      }
+
+      .comparison-table table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .comparison-table thead {
+        background: var(--dark);
+        color: white;
+      }
+
+      .comparison-table th {
+        padding: 24px 32px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      .comparison-table th:not(:first-child) {
+        text-align: center;
+      }
+
+      .comparison-table tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background 0.2s;
+      }
+
+      .comparison-table tbody tr:hover {
+        background: var(--bg-gray);
+      }
+
+      .comparison-table tbody tr:last-child {
+        border-bottom: none;
+      }
+
+      .comparison-table td {
+        padding: 20px 32px;
+        font-size: 0.95rem;
+      }
+
+      .comparison-table td:not(:first-child) {
+        text-align: center;
+      }
+
+      .comparison-table .feature-name {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .comparison-table .feature-name i {
+        font-size: 20px;
+        color: var(--primary);
+      }
+
+      .comparison-table .check {
+        color: var(--success);
+        font-size: 22px;
+      }
+
+      .comparison-table .cross {
+        color: var(--text-light);
+        font-size: 22px;
+      }
+
+      .comparison-table .value {
+        font-weight: 600;
+        color: var(--dark);
+      }
+
+      .comparison-table .unlimited {
+        color: var(--primary);
+        font-weight: 700;
+      }
+
+      /* ===== FAQ SECTION ===== */
+      .faq-section {
+        padding: 100px 40px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .faq-item {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin-bottom: 16px;
+        overflow: hidden;
+        transition: all 0.3s;
+      }
+
+      .faq-item:hover {
+        border-color: var(--primary);
+      }
+
+      .faq-item.open {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      }
+
+      .faq-question {
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        background: white;
+        transition: background 0.2s;
+      }
+
+      .faq-question:hover {
+        background: var(--bg-gray);
+      }
+
+      .faq-question h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .faq-question h3 i {
+        color: var(--primary);
+      }
+
+      .faq-toggle {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: var(--bg-gray);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+      }
+
+      .faq-item.open .faq-toggle {
+        background: var(--primary);
+        color: white;
+        transform: rotate(180deg);
+      }
+
+      .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease, padding 0.3s ease;
+      }
+
+      .faq-item.open .faq-answer {
+        max-height: 500px;
+      }
+
+      .faq-answer-content {
+        padding: 0 24px 24px;
+        color: var(--text-gray);
+        line-height: 1.7;
+      }
+
+      /* ===== GUARANTEE SECTION ===== */
+      .guarantee-section {
+        padding: 80px 40px;
+        background: linear-gradient(
+          135deg,
+          var(--dark) 0%,
+          var(--dark-soft) 100%
+        );
+        color: white;
+      }
+
+      .guarantee-content {
+        max-width: 900px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 60px;
+      }
+
+      .guarantee-icon {
+        flex-shrink: 0;
+        width: 120px;
+        height: 120px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        color: var(--success);
+      }
+
+      .guarantee-text h3 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+
+      .guarantee-text p {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.7;
+      }
+
+      /* ===== CTA SECTION ===== */
+      .cta-section {
+        padding: 100px 40px;
+        text-align: center;
+        background: linear-gradient(180deg, white 0%, var(--bg-gray) 100%);
+      }
+
+      .cta-section h2 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 16px;
+      }
+
+      .cta-section p {
+        font-size: 1.1rem;
+        color: var(--text-gray);
+        margin-bottom: 32px;
+      }
+
+      .cta-buttons {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      /* ===== FOOTER ===== */
+      footer {
+        background: var(--dark);
+        color: white;
+        padding: 60px 40px 30px;
+      }
+
+      .footer-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        gap: 60px;
+        margin-bottom: 60px;
+      }
+
+      .footer-brand .nav-logo {
+        color: white;
+        display: inline-block;
+        margin-bottom: 16px;
+      }
+
+      .footer-brand p {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+        line-height: 1.7;
+        max-width: 300px;
+      }
+
+      .footer-column h4 {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 20px;
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .footer-column ul {
+        list-style: none;
+      }
+
+      .footer-column ul li {
+        margin-bottom: 12px;
+      }
+
+      .footer-column ul a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+      }
+
+      .footer-column ul a:hover {
+        color: white;
+      }
+
+      .footer-bottom {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding-top: 30px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .footer-social {
+        display: flex;
+        gap: 16px;
+      }
+
+      .footer-social a {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 20px;
+        transition: color 0.2s;
+      }
+
+      .footer-social a:hover {
+        color: white;
+      }
+
+      .logo-spark {
+        font-size: 1.6rem;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        color: var(--dark);
+        display: flex;
+        align-items: center;
+        position: relative;
+        text-decoration: none;
+        margin-right: 10px;
+      }
+
+      .logo-spark i {
+        font-size: 24px;
+        color: var(--primary);
+        margin-left: 2px;
+        margin-bottom: 12px;
+        opacity: 0.8;
+        text-decoration: none;
+      }
+
+      .headerFoot {
+        color: white;
+        margin-bottom: 10px;
+      }
+
+      .ph-sparkle {
+        animation: sparkle 2s ease-in-out infinite;
+      }
+
+      @keyframes sparkle {
+        0%,
+        100% {
+          opacity: 0.7;
+          transform: rotate(0deg) scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: rotate(10deg) scale(1.1);
+        }
+      }
+
+      /* ===== RESPONSIVE ===== */
+      @media (max-width: 900px) {
+        .pricing-grid {
+          grid-template-columns: 1fr;
+          max-width: 450px;
+        }
+
+        .hero h1 {
+          font-size: 2.5rem;
+        }
+
+        .guarantee-content {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .footer-content {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .comparison-table {
+          overflow-x: auto;
+        }
+
+        .nav-center {
+          display: none;
+        }
+
+        .mobile-menu-btn {
+          display: flex;
+        }
+
+        .nav-buttons {
+          display: none;
+        }
+      }
+
+      .disclaimer {
+        margin-top: 48px;
+        color: rgba(0, 0, 0, 0.6);
+        text-align: center;
+      }
+
+      @media (max-width: 760px) {
+        nav {
+          padding: 0 20px;
+        }
+
+        .btn-primary {
+          height: 50px;
+        }
+      }
+
+      @media (max-width: 630px) {
+        nav {
+          padding: 0 20px;
+        }
+
+        .hero {
+          padding: 120px 20px 60px;
+        }
+
+        .hero h1 {
+          font-size: 2rem;
+        }
+
+        .pricing-section {
+          padding: 0 20px 60px;
+        }
+
+        .pricing-card {
+          padding: 30px;
+        }
+
+        .amount {
+          font-size: 3rem;
+        }
+
+        .footer-content {
+          grid-template-columns: 1fr;
+          gap: 40px;
+        }
+
+        .footer-bottom {
+          flex-direction: column;
+          gap: 16px;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav id="navbar">
+      <a href="/" class="nav-logo">
+        Header<i class="ph-fill ph-sparkle"></i>
+      </a>
+
+      <div class="nav-center">
+        <ul class="nav-links">
+          <li><a href="/">Home</a></li>
+          <li><a href="/pricing" class="active">Pricing</a></li>
+          <li><a href="/#features">Features</a></li>
+          <li><a href="/#how-it-works">How It Works</a></li>
+        </ul>
+      </div>
+
+      <div class="nav-buttons">
+        <a href="/log-in" class="btn btn-ghost">Log In</a>
+        <a href="/sign-up" class="btn btn-primary">Get Started</a>
+      </div>
+
+      <button
+        class="mobile-menu-btn"
+        id="mobileMenuBtn"
+        aria-label="Toggle menu"
+      >
+        <i class="ph ph-list"></i>
+        <i class="ph ph-x"></i>
+      </button>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+      <ul class="mobile-menu-links">
+        <li>
+          <a href="/">
+            <i class="ph ph-house"></i>
+            Home
+          </a>
+        </li>
+        <li>
+          <a href="/pricing" class="active">
+            <i class="ph ph-tag"></i>
+            Pricing
+          </a>
+        </li>
+        <li>
+          <a href="/#features">
+            <i class="ph ph-sparkle"></i>
+            Features
+          </a>
+        </li>
+        <li>
+          <a href="/#how-it-works">
+            <i class="ph ph-info"></i>
+            How It Works
+          </a>
+        </li>
+        <li>
+          <a href="/#faq">
+            <i class="ph ph-question"></i>
+            FAQ
+          </a>
+        </li>
+      </ul>
+
+      <div class="mobile-menu-divider"></div>
+
+      <div class="mobile-menu-buttons">
+        <a href="/log-in" class="btn btn-ghost">Log In</a>
+        <a href="/sign-up" class="btn btn-primary">
+          Get Started
+          <i class="ph ph-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="mobile-menu-footer">
+        <div class="mobile-menu-social">
+          <a href="#"><i class="ph ph-twitter-logo"></i></a>
+          <a href="#"><i class="ph ph-linkedin-logo"></i></a>
+          <a href="#"><i class="ph ph-github-logo"></i></a>
+        </div>
+        <p class="mobile-menu-copyright">© 2025 Header News</p>
+      </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <i class="ph ph-shooting-star"></i>
+          Simple, transparent pricing
+        </div>
+        <h1>
+          Stay informed for<br />
+          <span>less than a coffee</span>
+        </h1>
+        <p>
+          Get AI-powered news summaries delivered to you daily. Choose the plan
+          that fits your reading appetite.
+        </p>
+        <p class="hero-sub">No hidden fees. Cancel anytime. Start free.</p>
+      </div>
+
+      <!-- Billing Toggle -->
+      <div class="billing-toggle">
+        <span class="active" id="monthly-label">Monthly</span>
+        <div
+          class="toggle-switch"
+          id="billing-toggle"
+          role="button"
+          tabindex="0"
+        ></div>
+        <span id="yearly-label">Yearly</span>
+        <span class="save-badge">Save 17%</span>
+      </div>
+    </section>
+
+    <!-- Pricing Cards -->
+    <section class="pricing-section">
+      <div class="pricing-grid">
+        <!-- Basic Plan -->
+        <div class="pricing-card">
+          <div class="card-header">
+            <div class="plan-icon">
+              <i class="ph ph-star-four"></i>
+            </div>
+            <h3 class="plan-name">Free</h3>
+            <p class="plan-description">For clear, simple news</p>
+          </div>
+
+          <div class="price-container">
+            <div class="price monthly-price">
+              <span class="currency">€</span>
+              <span class="amount">0</span>
+              <span class="period">/mo</span>
+            </div>
+            <div class="price yearly-price">
+              <span class="currency">€</span>
+              <span class="amount">0</span>
+              <span class="period">/yr</span>
+            </div>
+            <p class="price-note">Free forever</p>
+          </div>
+
+          <ul class="features-list">
+            <li>
+              <i class="ph-fill ph-check-circle"></i>
+              <span class="feature-text">
+                <strong>5 article summaries</strong> per day
+              </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-check-circle"></i>
+              <span class="feature-text"> Full article content access </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-check-circle"></i>
+              <span class="feature-text"> Article view mode </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-check-circle"></i>
+              <span class="feature-text"> Original source info </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-check-circle"></i>
+              <span class="feature-text"> Article images </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-check-circle"></i>
+              <span class="feature-text"> 3 article saves </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-x-circle"></i>
+              <span class="feature-text" style="color: var(--text-light)">
+                EN & NL Articles
+              </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-x-circle"></i>
+              <span class="feature-text" style="color: var(--text-light)">
+                Offline reading
+              </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-x-circle"></i>
+              <span class="feature-text" style="color: var(--text-light)">
+                Bias & Quality Ratings
+              </span>
+            </li>
+          </ul>
+
+          <a href="/sign-up" class="btn btn-outline card-cta">
+            Get Started Free
+          </a>
+        </div>
+
+        <!-- Everyday Plan -->
+        <div class="pricing-card featured">
+          <div class="popular-badge">Most Popular</div>
+          <div class="card-header">
+            <div class="plan-icon">
+              <i class="ph-fill ph-sparkle"></i>
+            </div>
+            <h3 class="plan-name">Everyday</h3>
+            <p class="plan-description">
+              For readers who want the full picture
+            </p>
+          </div>
+
+          <div class="price-container">
+            <div class="price monthly-price">
+              <span class="currency">€</span>
+              <span class="amount">5</span>
+              <span class="period">/mo</span>
+            </div>
+            <div class="price yearly-price">
+              <span class="currency">€</span>
+              <span class="amount">50</span>
+              <span class="period">/yr</span>
+            </div>
+            <p class="price-note monthly-note">Billed monthly</p>
+            <p class="price-note yearly-note" style="display: none">
+              €4.17/mo billed annually
+            </p>
+          </div>
+
+          <ul class="features-list">
+            <li>
+              <i class="ph-fill ph-check-circle"></i>
+              <span class="feature-text">
+                <strong>50+ article summaries</strong> per day
+                <span class="feature-highlight">10x more</span>
+              </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-check-circle"></i>
+              <span class="feature-text"> Full article content access </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-check-circle"></i>
+              <span class="feature-text"> Article view mode </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-check-circle"></i>
+              <span class="feature-text"> Original source info </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-check-circle"></i>
+              <span class="feature-text"> Article images </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-check-circle"></i>
+              <span class="feature-text">
+                <strong>Unlimited</strong> article saves
+              </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-check-circle"></i>
+              <span class="feature-text"> EN & NL Articles </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-check-circle"></i>
+              <span class="feature-text"> Offline reading </span>
+            </li>
+            <li>
+              <i class="ph-fill ph-check-circle"></i>
+              <span class="feature-text"> Bias & Quality Ratings </span>
+            </li>
+          </ul>
+
+          <a href="/sign-up?plan=everyday" class="btn btn-primary card-cta">
+            <i class="ph ph-lightning"></i>
+            Start 7-day free trial
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comparison Table -->
+    <section class="comparison-section">
+      <div class="section-header">
+        <h2>Compare plans in detail</h2>
+        <p>See exactly what you get with each plan</p>
+      </div>
+
+      <div class="comparison-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Basic</th>
+              <th>Everyday</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="feature-name">
+                  <i class="ph ph-newspaper"></i>
+                  Daily article summaries
+                </div>
+              </td>
+              <td><span class="value">5</span></td>
+              <td><span class="value">50+</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="feature-name">
+                  <i class="ph ph-bell-ringing"></i>
+                  Bullet summeries
+                </div>
+              </td>
+              <td><i class="ph-fill ph-check-circle check"></i></td>
+              <td><i class="ph-fill ph-check-circle check"></i></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="feature-name">
+                  <i class="ph ph-file-text"></i>
+                  Full article content
+                </div>
+              </td>
+              <td><i class="ph-fill ph-check-circle check"></i></td>
+              <td><i class="ph-fill ph-check-circle check"></i></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="feature-name">
+                  <i class="ph ph-text-aa"></i>
+                  Original source info
+                </div>
+              </td>
+              <td><i class="ph-fill ph-check-circle check"></i></td>
+              <td><i class="ph-fill ph-check-circle check"></i></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="feature-name">
+                  <i class="ph ph-image"></i>
+                  Article images
+                </div>
+              </td>
+              <td><i class="ph-fill ph-check-circle check"></i></td>
+              <td><i class="ph-fill ph-check-circle check"></i></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="feature-name">
+                  <i class="ph ph-folders"></i>
+                  Article view mode
+                </div>
+              </td>
+              <td>
+                <span class="value"
+                  ><i class="ph-fill ph-check-circle check"></i
+                ></span>
+              </td>
+              <td>
+                <span class="unlimited"
+                  ><i class="ph-fill ph-check-circle check"></i
+                ></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="feature-name">
+                  <i class="ph ph-cloud-slash"></i>
+                  Offline reading
+                </div>
+              </td>
+              <td><i class="ph-fill ph-x-circle cross"></i></td>
+              <td><i class="ph-fill ph-check-circle check"></i></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="feature-name">
+                  <i class="ph ph-ruler"></i>
+                  Bias and quality ratings
+                </div>
+              </td>
+              <td><i class="ph-fill ph-x-circle cross"></i></td>
+              <td><i class="ph-fill ph-check-circle check"></i></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="feature-name">
+                  <i class="ph ph-star"></i>
+                  Save favorites
+                </div>
+              </td>
+              <td><span class="value">3</span></td>
+              <td><span class="unlimited">Unlimited</span></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="feature-name">
+                  <i class="ph ph-headset"></i>
+                  Support
+                </div>
+              </td>
+              <td><span class="value">Email</span></td>
+              <td><span class="value">Priority Email</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+      <div class="section-header">
+        <h2>Frequently asked questions</h2>
+        <p>Everything you need to know about our plans</p>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item open">
+          <div class="faq-question">
+            <h3>
+              <i class="ph ph-question"></i> How does the free trial work?
+            </h3>
+            <div class="faq-toggle"><i class="ph ph-caret-down"></i></div>
+          </div>
+          <div class="faq-answer">
+            <div class="faq-answer-content">
+              When you sign up for the Everyday plan, you get full access to all
+              features for 7 days completely free. You will be asked for your
+              payment details before starting. If you choose to cancel before
+              the 7 day period, you will get moved down to our Basic plan -
+              hustle free.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <h3>
+              <i class="ph ph-question"></i> Can I upgrade or downgrade anytime?
+            </h3>
+            <div class="faq-toggle"><i class="ph ph-caret-down"></i></div>
+          </div>
+          <div class="faq-answer">
+            <div class="faq-answer-content">
+              Absolutely! You can upgrade from Basic to Everyday at any time and
+              get immediate access to all premium features. If you decide to
+              downgrade, your premium features will remain active until the end
+              of your current billing period.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <h3>
+              <i class="ph ph-question"></i> What payment methods do you accept?
+            </h3>
+            <div class="faq-toggle"><i class="ph ph-caret-down"></i></div>
+          </div>
+          <div class="faq-answer">
+            <div class="faq-answer-content">
+              We accept all major credit cards (Visa, Mastercard, American
+              Express), PayPal, and Apple Pay. All payments are processed
+              securely through Stripe. We never store your full credit card
+              details on our servers.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <h3>
+              <i class="ph ph-question"></i> What happens if I use all my daily
+              summaries?
+            </h3>
+            <div class="faq-toggle"><i class="ph ph-caret-down"></i></div>
+          </div>
+          <div class="faq-answer">
+            <div class="faq-answer-content">
+              If you reach your daily limit, you'll see a friendly notification
+              letting you know. Your limit resets at midnight (UTC) every day.
+              On the Basic plan, you can always upgrade to Everyday to get 50
+              summaries per day. Pro tip: Remember, you can always store your
+              favorite articles by pressing the star button - they are
+              accessible anytime, no matter your limit.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <h3><i class="ph ph-question"></i> Is there a refund policy?</h3>
+            <div class="faq-toggle"><i class="ph ph-caret-down"></i></div>
+          </div>
+          <div class="faq-answer">
+            <div class="faq-answer-content">
+              You can try Header free for 7 days. Your card will not be charged
+              during the trial. If you cancel before the trial ends, you won't
+              be charged. Unfortunately, all payments after the trial are
+              non-refundable.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <h3>
+              <i class="ph ph-question"></i> Do unused summaries roll over?
+            </h3>
+            <div class="faq-toggle"><i class="ph ph-caret-down"></i></div>
+          </div>
+          <div class="faq-answer">
+            <div class="faq-answer-content">
+              Currently, daily summaries don't roll over to the next day. Each
+              day starts fresh with your full allocation. This keeps things
+              simple and ensures you're always getting the most current news. We
+              find most users prefer fresh daily content anyway!
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Guarantee Section -->
+    <section class="guarantee-section">
+      <div class="guarantee-content">
+        <div class="guarantee-icon">
+          <i class="ph ph-users-three"></i>
+        </div>
+        <div class="guarantee-text">
+          <h3>Invite Friends, Enjoy a Free Month</h3>
+          <p>
+            Great news! Soon, when you refer a friend who signs up for a
+            one-month (or longer) <strong>Everyday</strong> plan, you'll earn a
+            whole month of the <strong>Everyday</strong> plan absolutely free.
+            Keep an eye out for the official launch of our referral program — we
+            can't wait to reward you for sharing Header with your friends!
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+      <h2>Ready to stay informed?</h2>
+      <p>Join a growing community of readers who value clarity with Header.</p>
+      <div class="cta-buttons">
+        <a href="/sign-up" class="btn btn-primary btn-large">
+          <i class="ph-fill ph-sparkle"></i>
+          Start free trial
+        </a>
+        <a href="/#features" class="btn btn-outline btn-large">
+          <i class="ph ph-newspaper-clipping"></i>
+          See how it works
+        </a>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="logo-spark headerFoot"
+            >Header<i class="ph-fill ph-sparkle"></i
+          ></a>
+          <p>
+            AI-powered news summaries that keep you informed in minutes, not
+            hours. Stay ahead without the information overload.
+          </p>
+        </div>
+        <div class="footer-column">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="/#features">Features</a></li>
+            <li><a href="/pricing">Pricing</a></li>
+            <li><a href="#">Mobile App</a></li>
+            <li><a href="#">Integrations</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="/#about">About</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="/#contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Cookie Policy</a></li>
+            <li><a href="#">GDPR</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2025 Header News. All rights reserved.</span>
+        <div class="footer-social">
+          <a href="#"><i class="ph ph-twitter-logo"></i></a>
+          <a href="#"><i class="ph ph-linkedin-logo"></i></a>
+          <a href="#"><i class="ph ph-github-logo"></i></a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Mobile Menu Toggle
+      const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+      const mobileMenu = document.getElementById("mobileMenu");
+      const mobileMenuOverlay = document.getElementById("mobileMenuOverlay");
+      const body = document.body;
+
+      function toggleMobileMenu() {
+        mobileMenuBtn.classList.toggle("active");
+        mobileMenu.classList.toggle("active");
+        mobileMenuOverlay.classList.toggle("active");
+        body.classList.toggle("menu-open");
+      }
+
+      function closeMobileMenu() {
+        mobileMenuBtn.classList.remove("active");
+        mobileMenu.classList.remove("active");
+        mobileMenuOverlay.classList.remove("active");
+        body.classList.remove("menu-open");
+      }
+
+      mobileMenuBtn.addEventListener("click", toggleMobileMenu);
+      mobileMenuOverlay.addEventListener("click", closeMobileMenu);
+
+      // Close mobile menu when clicking on a link
+      document
+        .querySelectorAll(".mobile-menu-links a, .mobile-menu-buttons a")
+        .forEach((link) => {
+          link.addEventListener("click", () => {
+            closeMobileMenu();
+          });
+        });
+
+      // Navbar scroll effect
+      const navbar = document.getElementById("navbar");
+      let lastScroll = 0;
+
+      window.addEventListener("scroll", () => {
+        const currentScroll = window.pageYOffset;
+
+        if (currentScroll > 50) {
+          navbar.classList.add("scrolled");
+        } else {
+          navbar.classList.remove("scrolled");
+        }
+
+        lastScroll = currentScroll;
+      });
+
+      // Close mobile menu on escape key
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && mobileMenu.classList.contains("active")) {
+          closeMobileMenu();
+        }
+      });
+
+      // Close mobile menu on window resize (if going to desktop)
+      window.addEventListener("resize", () => {
+        if (
+          window.innerWidth > 900 &&
+          mobileMenu.classList.contains("active")
+        ) {
+          closeMobileMenu();
+        }
+      });
+
+      // Billing Toggle
+      const billingToggle = document.getElementById("billing-toggle");
+      const monthlyLabel = document.getElementById("monthly-label");
+      const yearlyLabel = document.getElementById("yearly-label");
+      const monthlyPrices = document.querySelectorAll(".monthly-price");
+      const yearlyPrices = document.querySelectorAll(".yearly-price");
+      const monthlyNote = document.querySelector(".monthly-note");
+      const yearlyNote = document.querySelector(".yearly-note");
+
+      billingToggle.addEventListener("click", () => {
+        billingToggle.classList.toggle("active");
+        const isYearly = billingToggle.classList.contains("active");
+
+        monthlyLabel.classList.toggle("active", !isYearly);
+        yearlyLabel.classList.toggle("active", isYearly);
+
+        monthlyPrices.forEach((el) => el.classList.toggle("hide", isYearly));
+        yearlyPrices.forEach((el) => el.classList.toggle("show", isYearly));
+
+        if (monthlyNote)
+          monthlyNote.style.display = isYearly ? "none" : "block";
+        if (yearlyNote) yearlyNote.style.display = isYearly ? "block" : "none";
+      });
+
+      // FAQ Accordion
+      document.querySelectorAll(".faq-question").forEach((question) => {
+        question.addEventListener("click", () => {
+          const item = question.parentElement;
+          const wasOpen = item.classList.contains("open");
+
+          // Close all items
+          document.querySelectorAll(".faq-item").forEach((faq) => {
+            faq.classList.remove("open");
+          });
+
+          // Open clicked item if it wasn't open
+          if (!wasOpen) {
+            item.classList.add("open");
+          }
+        });
+      });
+
+      // Smooth scroll for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          const href = this.getAttribute("href");
+          if (href !== "#") {
+            e.preventDefault();
+            const target = document.querySelector(href);
+            if (target) {
+              target.scrollIntoView({ behavior: "smooth" });
+            }
+          }
+        });
+      });
+
+      // Add keyboard support for toggle
+      billingToggle.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          billingToggle.click();
+        }
+      });
+    </script>
+  </body>
+</html>
