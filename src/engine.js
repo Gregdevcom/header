@@ -439,7 +439,7 @@ async function extractText(lang) {
             if (count > minWordCount) {
               try {
                 if (count > maxWordCount) {
-                  // find the 1500'th word, cut the text at the end of the sentence that word is in >>>>>>>>>>>>>>>>>>
+                  // find the 1500'th word, cut the text at the end of the sentence that word is in
                   const words = cleanedText.split(/\s+/);
                   if (words.length > 1600) {
                     continue;
@@ -800,14 +800,9 @@ cron.schedule("0 0 * * *", async () => {
       }
     }
   } catch (e) {
-    console.error("Daily maintenance failure");
+    console.error("Daily maintenance failure\n");
     console.error(e);
   } finally {
     isRunning = false;
   }
 });
-
-// await archiveDailyNews("EN");
-// await archiveDailyNews("NL");
-await extractText("EN");
-// Don't forget to kill terminal after running this>>>>>>>>>>>>>>>>>>>>>>>>

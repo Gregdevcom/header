@@ -61,6 +61,8 @@ const URL = process.env.APP_URL;
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 const PORT = process.env.PORT || 3000;
 
 const __dirname = path.dirname(fUTP(import.meta.url));
@@ -82,11 +84,38 @@ app.use(
                 "'self'",
                 "https://js.stripe.com",
                 "https://maps.googleapis.com",
+                "'unsafe-inline'",
+                "https://unpkg.com",
+                "https://cdn.jsdelivr.net",
               ],
-              styleSrc: ["'self'", "'unsafe-inline'"],
-              imgSrc: ["'self'", "data:", "https:", "https://*.stripe.com"],
-              fontSrc: ["'self'", "https://fonts.gstatic.com"],
-              connectSrc: ["'self'", "https://api.stripe.com"],
+              styleSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                "https://unpkg.com",
+                "https://fonts.googleapis.com",
+                "https://cdn.jsdelivr.net",
+              ],
+              imgSrc: [
+                "'self'",
+                "data:",
+                "https:",
+                "https://*.stripe.com",
+                "https://cdn.jsdelivr.net",
+              ],
+              fontSrc: [
+                "'self'",
+                "https://fonts.gstatic.com",
+                "https://fonts.googleapis.com",
+                "https://cdn.jsdelivr.net",
+                "https://unpkg.com",
+                "data:",
+              ],
+              connectSrc: [
+                "'self'",
+                "https://api.stripe.com",
+                "https://fonts.googleapis.com",
+                "https://fonts.gstatic.com",
+              ],
               frameSrc: [
                 "'self'",
                 "https://js.stripe.com",
@@ -139,7 +168,7 @@ app.post(
       console.error("Webhook signature verification failed:", err.message);
       return res.sendStatus(400);
     }
-
+    res.sendStatus(200);
     try {
       switch (event.type) {
         case "checkout.session.completed": {
@@ -186,11 +215,8 @@ app.post(
           break;
         }
       }
-
-      res.json({ received: true });
     } catch (err) {
       console.error("Webhook handler error:", err);
-      res.sendStatus(500);
     }
   }
 );
@@ -287,7 +313,14 @@ app.get("/auth/google/callback", async (req, res) => {
       } else {
         await User.updateOne(
           { email: googleEmail },
-          { $set: { name: googleName } },
+          {
+            $set: {
+              name: googleName,
+              authProvider: "google",
+              verified: true,
+              passwordHash: null,
+            },
+          },
           { session }
         );
       }
@@ -346,6 +379,7 @@ app.get("/auth/google/callback", async (req, res) => {
       throw err;
     }
   } catch (err) {
+    console.error(err);
     res.redirect("/log-in?error=google_failed"); // Add a warning for frontend for this>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   } finally {
     if (session) await session.endSession();
@@ -420,8 +454,11 @@ app.post("/sign-up", authLimiter, validateSignUp, async (req, res) => {
     res.sendStatus(201);
     try {
       await sendVeri(data.email, verificationToken, data.name);
-    } catch {}
+    } catch (e) {
+      console.error(e);
+    }
   } catch (e) {
+    console.error(e);
     await session.abortTransaction();
     res.sendStatus(500);
   } finally {
@@ -499,7 +536,8 @@ app.get("/log-in", async (req, res) => {
       await session.commitTransaction();
       return res.sendFile(path.join(__dirname, "..", "public", "log-in.html"));
     }
-  } catch {
+  } catch (e) {
+    console.error(e);
     await session.abortTransaction();
     res.clearCookie("jwt");
     res.clearCookie("jwt_refresh", { path: "/api/refresh" });
@@ -688,7 +726,8 @@ app.get("/api/refresh/logout", async (req, res) => {
     }
     await session.commitTransaction();
     res.sendStatus(200);
-  } catch {
+  } catch (e) {
+    console.error(e);
     await session.abortTransaction();
     res.sendStatus(200);
   } finally {
@@ -763,11 +802,34 @@ app.get("/api/user-data", specialAuthToken, async (req, res) => {
         : null,
       canStartTrial: !user.hasUsedTrial,
       contactEmail: process.env.EMAIL_APP,
+      welcome: user.welcome,
     });
-  } catch {
+  } catch (e) {
+    console.log(e);
     res.sendStatus(500);
   }
 });
+
+app.post(
+  "/api/refresh/update-user-hints",
+  specialAuthToken,
+  async (req, res) => {
+    try {
+      if (req.body.welcome === false) {
+        await User.updateOne(
+          { email: req.user.email },
+          { $set: { welcome: false } }
+        );
+      } else {
+        return res.sendStatus(400);
+      }
+      res.sendStatus(200);
+    } catch (e) {
+      console.error(e);
+      res.sendStatus(500);
+    }
+  }
+);
 
 app.post("/api/refresh/save-article", specialAuthToken, async (req, res) => {
   const userEmail = req.user.email;
@@ -862,27 +924,27 @@ app.get("/api/refresh/load-stars", specialAuthToken, async (req, res) => {
       res.status(200).json({ savedArticles: savedArticleArray });
     }
   } catch (e) {
-    console.log(e);
+    console.error(e);
     return res.sendStatus(500);
   }
 });
 
 app.post("/request-reset", authLimiter, async (req, res) => {
-  const userEmail = req.body.email;
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const userObj = await User.findOne({ email: userEmail }).session(session);
+    const userObj = await User.findOne({ email: req.body.email }).session(
+      session
+    );
 
     if (!userObj || userObj.authProvider === "google" || !userObj.verified) {
       await session.abortTransaction();
       return res.sendStatus(200);
     }
 
-    const userName = userObj.name;
     const resetToken = crypto.randomBytes(32).toString("hex");
     await User.updateOne(
-      { email: userEmail },
+      { email: req.body.email },
       {
         passChangeToken: {
           token: resetToken,
@@ -892,10 +954,10 @@ app.post("/request-reset", authLimiter, async (req, res) => {
       { session }
     );
 
-    await sendReset(userEmail, resetToken, userName);
+    await sendReset(req.body.email, resetToken, userObj.name);
     await session.commitTransaction();
     res.sendStatus(200);
-  } catch {
+  } catch (e) {
     await session.abortTransaction();
     res.sendStatus(200);
   } finally {
@@ -962,7 +1024,7 @@ app.get("/verify-email", authLimiter, async (req, res) => {
   try {
     const token = req.query.token;
     if (token) {
-      await User.findOneAndUpdate(
+      const updateOperation = await User.findOneAndUpdate(
         {
           veriToken: token,
           verified: false,
@@ -970,13 +1032,16 @@ app.get("/verify-email", authLimiter, async (req, res) => {
         },
         { verified: true, veriToken: null, veriTokenExpiresAt: null }
       );
-      res.redirect("/content");
+      if (updateOperation) {
+        return res.redirect("/content");
+      } else {
+        throw new Error();
+      }
     } else {
       throw new Error();
     }
-  } catch {
-    res.sendStatus(404);
-    // Show error to client, invalid token >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  } catch (e) {
+    res.status(404).sendFile(path.join(__dirname, "..", "public", "404.html"));
   }
 });
 
@@ -985,7 +1050,6 @@ app.post(
   authLimiter,
   validateEmail,
   async (req, res) => {
-    // Add link to this url to forgot-password page >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     try {
       const userInfo = await User.findOne({ email: req.body.email });
       if (!userInfo) {
@@ -1000,9 +1064,15 @@ app.post(
       const verificationTokenExpiresAt = new Date(
         new Date().getTime() + 24 * 60 * 60 * 1000
       );
-      userInfo.veriTokenExpiresAt = verificationTokenExpiresAt;
-      userInfo.veriToken = verificationToken;
-      await userInfo.save();
+      await User.updateOne(
+        { email: req.body.email },
+        {
+          $set: {
+            veriToken: verificationToken,
+            veriTokenExpiresAt: verificationTokenExpiresAt,
+          },
+        }
+      );
       await sendVeri(userInfo.email, verificationToken, userInfo.name);
       res.sendStatus(200);
     } catch {
@@ -1016,37 +1086,28 @@ app.post(
   authLimiter,
   specialAuthToken,
   async (req, res) => {
-    const session = await mongoose.startSession();
     try {
-      session.startTransaction();
-      const userInfo = await User.findOne({ email: req.user.email }).session(
-        session
-      );
-      if (!userInfo) {
-        await session.abortTransaction();
-        return res.sendStatus(404);
-      }
-
-      if (userInfo.verified) {
-        await session.abortTransaction();
+      if (req.user.verified) {
         return res.sendStatus(400);
       }
-
       const verificationToken = crypto.randomBytes(32).toString("hex");
       const verificationTokenExpiresAt = new Date(
         new Date().getTime() + 24 * 60 * 60 * 1000
       );
-      userInfo.veriTokenExpiresAt = verificationTokenExpiresAt;
-      userInfo.veriToken = verificationToken;
-      await userInfo.save({ session });
-      await sendVeri(userInfo.email, verificationToken, userInfo.name);
-      await session.commitTransaction();
+      await User.updateOne(
+        { email: req.user.email },
+        {
+          $set: {
+            veriToken: verificationToken,
+            veriTokenExpiresAt: verificationTokenExpiresAt,
+          },
+        }
+      );
+      await sendVeri(req.user.email, verificationToken, req.user.name);
       res.sendStatus(200);
-    } catch {
-      await session.abortTransaction();
+    } catch (e) {
+      console.error(e);
       return res.sendStatus(500);
-    } finally {
-      await session.endSession();
     }
   }
 );
@@ -1090,7 +1151,8 @@ app.post(
       const name = req.body.name;
       await User.updateOne({ email: email }, { $set: { name: name } });
       res.sendStatus(200);
-    } catch {
+    } catch (e) {
+      console.error(e);
       res.sendStatus(500);
     }
   }
@@ -1101,17 +1163,33 @@ app.delete("/delete-account", specialAuthToken, async (req, res) => {
     return res.sendStatus(401);
   }
 
+  const session = await mongoose.startSession();
   try {
+    await session.startTransaction();
+
+    const deletedAcc = await User.deleteOne(
+      { email: req.user.email },
+      { session }
+    );
+
+    if (deletedAcc.deletedCount === 0) {
+      await session.abortTransaction();
+      return res.sendStatus(403);
+    }
+
     if (req.user.stripeCustomerId) {
       await stripe.customers.del(req.user.stripeCustomerId);
     }
     res.clearCookie("jwt");
     res.clearCookie("jwt_refresh", { path: "/api/refresh" });
-
-    await User.deleteOne({ email: req.user.email });
+    await session.commitTransaction();
     res.sendStatus(200);
-  } catch {
+  } catch (e) {
+    await session.abortTransaction();
+    console.error(e);
     res.sendStatus(403);
+  } finally {
+    await session.endSession();
   }
 });
 
@@ -1167,7 +1245,8 @@ app.post("/api/refresh/update-language", specialAuthToken, async (req, res) => {
     } else {
       throw new Error();
     }
-  } catch {
+  } catch (e) {
+    console.error(e);
     res.sendStatus(500);
   }
 });
@@ -1346,29 +1425,6 @@ app.post("/api/create-portal-session", specialAuthToken, async (req, res) => {
   }
 });
 
-//Not really needed:
-// Get current subscription status
-app.get("/api/subscription-status", specialAuthToken, async (req, res) => {
-  try {
-    const user = req.user;
-
-    res.json({
-      plan: user.plan,
-      subscription: user.subscription
-        ? {
-            status: user.subscription.status,
-            currentPeriodEnd: user.subscription.currentPeriodEnd,
-            cancelAtPeriodEnd: user.subscription.cancelAtPeriodEnd,
-          }
-        : null,
-    });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to get subscription status" });
-  }
-});
-
-//
-
 // Cancel subscription (at period end)
 app.post("/api/cancel-subscription", specialAuthToken, async (req, res) => {
   try {
@@ -1481,7 +1537,8 @@ app.get("/health", async (req, res) => {
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
     });
-  } catch {
+  } catch (e) {
+    console.error(e);
     res.status(503).json({ status: "unhealthy" });
   }
 });
@@ -1499,12 +1556,13 @@ app.use((err, req, res, next) => {
 // Unknown page handler:
 
 app.use((req, res) => {
-  const filePath = path.join(__dirname, "..", "public", "404.html");
-  res.status(404).sendFile(filePath, (err) => {
-    if (err) {
-      res.status(404).send("Page not found");
-    }
-  });
+  res
+    .status(404)
+    .sendFile(path.join(__dirname, "..", "public", "404.html"), (err) => {
+      if (err) {
+        res.status(404).send("Page not found");
+      }
+    });
 });
 
 // Functions:
@@ -1551,6 +1609,7 @@ async function handleSubscriptionCreated(subscription) {
 
     await session.commitTransaction();
   } catch (error) {
+    console.error(error);
     await session.abortTransaction();
     throw error;
   } finally {
@@ -2159,7 +2218,8 @@ async function sendVeri(userEmail, token, userName) {
 
   try {
     await transporter.sendMail(mailOptions);
-  } catch {
+  } catch (e) {
+    console.error(e);
     throw new Error();
   }
 }
@@ -2305,7 +2365,8 @@ async function sendReset(userEmail, resetToken, userName) {
 
   try {
     await transporter.sendMail(mailOptions);
-  } catch {
+  } catch (e) {
+    console.error(e);
     throw new Error();
   }
 }
@@ -2313,62 +2374,3 @@ async function sendReset(userEmail, resetToken, userName) {
 // The server launces here
 
 await startServer();
-
-/*
-
-Todos/ideas:
-
-Add: on sign up and in settings, let users personalize which news they view, NL or EN or RU.
-
-Add: the like/dislike rating logic - make it send feedback
-
-Add: Hash refresh tokens during storage in DB
-
-Add: a billing system (iPhone conversation)
-
-Add support page and contacts
-
-Add weather data to dash
-
-Add a comments feature to feed
-
-Add Offline reading feature (download article feature)
-
-Add a notes feature for articles
-
-Personalize footer
-
-Add filters to the favorites view
-
-Add (maybe) a morning briefing feature.
-
-Add (maybe): Add audio reads for all content
-
-Add (maybe): somehow make use of Archived articles through "weekly recaps" - new feature
-
-Create a log file feature before production
-
-Add (maybe) improve AutoScroll function - not necessary/critical
-
-Add (maybe): indexing to DB for faster and cheaper operation
-
-Add (maybe): When users want to favorite an article which isn't in the Article collection, try to search Archive, since frontend and server now throw an error “404 could not find article”
-
-Add: Set up “remember me” functionality in log in (change JWT duration)
-
-Personalized feed feature by users selecting "topics/tags" they are interested in - caution involves increased AI costs
-
-Add (maybe): Load icons on page offline, to make it faster
-
-Create a timeout page when too many requests are sent (rate limiter)
-
-Clean archive so to decrease storage costs and overall collect "garbage"
-
-Implement a garbage collection system for user's localStorage
-
-- DO: Set puppeteer location as US.
-- DO: change mongoose DB url for production
-- DO Change how files are launched for production
-- DO: Change URL address in email sending for production
-- DO: Change it from HTTP to HTTPS
-*/

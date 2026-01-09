@@ -49,7 +49,6 @@ const userSchema = new mongoose.Schema(
       cancelAtPeriodEnd: { type: Boolean, default: false }, // If scheduled to cancel
       trialEnd: { type: Date, default: null },
     },
-
     hasUsedTrial: { type: Boolean, default: false },
     plan: {
       type: String,
@@ -70,6 +69,7 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    welcome: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
