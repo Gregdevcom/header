@@ -508,6 +508,10 @@ async function loadDashboard() {
                       >${data.contactEmail}</a
                     ></span
                   >`;
+
+    if (data.welcome) {
+      showWelcomeBanner(data.name);
+    }
     try {
       const starRes = await fetch("/api/refresh/load-stars", {
         method: "GET",
@@ -1447,7 +1451,6 @@ async function updateBillingUI() {
       trialCtaEl?.classList.remove("hidden");
     }
 
-    // ✅ FIX: Set billing amount for free users and RETURN early
     if (billingAmountEl) {
       billingAmountEl.textContent = "—";
     }
@@ -1855,6 +1858,52 @@ function checkPaymentStatus() {
     }, 500);
     // Clean URL
     window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}
+
+// --- Functions to show welcome overlay to new users ---
+
+function showWelcomeBanner(userName) {
+  const banner = document.getElementById("welcome-banner");
+  const greeting = document.getElementById("welcome-user-greeting");
+
+  greeting.textContent = `Great to have you here, ${userName}.`;
+
+  banner.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+
+  // Initialize the button handler
+  document
+    .getElementById("welcome-got-it-btn")
+    .addEventListener("click", dismissWelcomeBanner);
+}
+
+async function dismissWelcomeBanner() {
+  const btn = document.getElementById("welcome-got-it-btn");
+  const banner = document.getElementById("welcome-banner");
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> Loading...';
+
+  try {
+    const response = await fetch("/api/refresh/update-user-hints", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ welcome: false }),
+    });
+
+    if (response.ok) {
+      banner.classList.add("hidden");
+      document.body.style.overflow = "";
+    } else if (response.status === 403) {
+      location.reload(); // bad ui>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    } else {
+      throw new Error();
+    }
+  } catch {
+    banner.classList.add("hidden");
+    document.body.style.overflow = "";
   }
 }
 
