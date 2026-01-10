@@ -1674,219 +1674,451 @@ async function sendDeletionWarning(userEmail, userName, deleteDate) {
     html: `
       <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Account Deletion Warning | Header</title>
-</head>
-<body style="margin: 0; padding: 0; background-color: #f4f7fa; font-family: 'Segoe UI', Arial, sans-serif;">
-  
-  <!-- Wrapper -->
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f4f7fa; padding: 40px 20px;">
-    <tr>
-      <td align="center">
-        
-        <!-- Main Container -->
-        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);">
-          
-          <!-- Header with Warning Theme -->
-          <tr>
-            <td style="background-color: #0f172a; padding: 40px 40px; text-align: center; position: relative;">
-              
-              <!-- Logo -->
-              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 24px auto;">
-                <tr>
-                  <td>
-                    <!-- Use cid: to reference the attached image -->
-        <img 
-          src="cid:headerlogo" 
-          alt="Header" 
-          width="150" 
-          height="40"
-          style="display: block; margin: 0 auto 24px auto;"
-        />
-                  </td>
-                </tr>
-              </table>
-              
-              <!-- Warning Icon -->
-              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 20px auto;">
-                <tr>
-                  <td style="background-color: rgba(239, 68, 68, 0.15); border-radius: 50%; width: 64px; height: 64px; text-align: center; line-height: 64px;">
-                    <span style="font-size: 32px;">⚠️</span>
-                  </td>
-                </tr>
-              </table>
-              
-              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">
-                Your account is scheduled for deletion
-              </h1>
-              <p style="color: rgba(255, 255, 255, 0.7); margin: 12px 0 0 0; font-size: 15px;">
-                Action required if you want to keep your account
-              </p>
-            </td>
-          </tr>
-          
-          <!-- Body -->
-          <tr>
-            <td style="padding: 48px 40px;">
-              
-              <!-- Greeting -->
-              <p style="color: #0f172a; font-size: 17px; margin: 0 0 20px 0; line-height: 1.6;">
-                Hi <strong>${userName}</strong>,
-              </p>
-              
-              <p style="color: #64748b; font-size: 15px; margin: 0 0 24px 0; line-height: 1.7;">
-                We received a request to delete your Header account. Your account and all associated data will be <strong>permanently deleted</strong> on:
-              </p>
-              
-              <!-- Deletion Date Box -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin: 0 0 32px 0;">
-                <tr>
-                  <td style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 20px; text-align: center;">
-                    <p style="color: #991b1b; font-size: 13px; font-weight: 600; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">
-                      Scheduled Deletion Date
-                    </p>
-                    <p style="color: #dc2626; font-size: 20px; font-weight: 700; margin: 0;">
-                      ${formattedDate}
-                    </p>
-                  </td>
-                </tr>
-              </table>
-              
-              <!-- What will be deleted -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border-radius: 12px; margin-bottom: 32px;">
-                <tr>
-                  <td style="padding: 24px;">
-                    <p style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 16px 0;">
-                      What will be permanently deleted:
-                    </p>
-                    <table role="presentation" cellspacing="0" cellpadding="0">
-                      <tr>
-                        <td style="padding: 6px 0;">
-                          <span style="color: #dc2626; margin-right: 10px;">✕</span>
-                          <span style="color: #64748b; font-size: 14px;">All your saved articles</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 6px 0;">
-                          <span style="color: #dc2626; margin-right: 10px;">✕</span>
-                          <span style="color: #64748b; font-size: 14px;">Your reading preferences and history</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 6px 0;">
-                          <span style="color: #dc2626; margin-right: 10px;">✕</span>
-                          <span style="color: #64748b; font-size: 14px;">Active subscriptions (no refunds)</span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 6px 0;">
-                          <span style="color: #dc2626; margin-right: 10px;">✕</span>
-                          <span style="color: #64748b; font-size: 14px;">Your account and login credentials</span>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-              
-              <!-- Changed your mind section -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; margin-bottom: 32px;">
-                <tr>
-                  <td style="padding: 24px;">
-                    <p style="color: #166534; font-size: 15px; font-weight: 600; margin: 0 0 12px 0;">
-                      Changed your mind?
-                    </p>
-                    <p style="color: #15803d; font-size: 14px; margin: 0; line-height: 1.6;">
-                      You can cancel the deletion anytime before the scheduled date. Simply log in to your account and click "Cancel Deletion" on the deletion notice page.
-                    </p>
-                  </td>
-                </tr>
-              </table>
-              
-              <!-- CTA Button -->
-              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 32px auto;">
-                <tr>
-                  <td align="center" style="background-color: #0f172a; border-radius: 12px;">
-                    <a href="${loginLink}" target="_blank" style="display: inline-block; padding: 16px 48px; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none;">
-                      Log in to cancel deletion →
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              
-              <!-- Alternative Link -->
-              <p style="color: #94a3b8; font-size: 13px; margin: 0 0 10px 0;">
-                Button not working? Copy and paste this link:
-              </p>
-              <p style="background-color: #f1f5f9; padding: 12px 14px; border-radius: 8px; word-break: break-all; margin: 0 0 32px 0;">
-                <a href="${loginLink}" style="color: #2563eb; font-size: 12px; text-decoration: none;">
-                  ${loginLink}
-                </a>
-              </p>
-              
-              <!-- Divider -->
-              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;">
-              
-              <!-- Security Notice -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td style="padding: 0;">
-                    <p style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.6;">
-                      <strong style="color: #64748b;">Didn't request this?</strong><br>
-                      If you didn't request account deletion, please log in immediately and cancel the deletion. Then change your password to secure your account. If you need help, contact us at <a href="mailto:${process.env.EMAIL_APP}" style="color: #2563eb; text-decoration: none;">${process.env.EMAIL_APP}</a>.
-                    </p>
-                  </td>
-                </tr>
-              </table>
-              
-            </td>
-          </tr>
-          
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #0f172a; padding: 32px 40px; text-align: center;">
-              
-              <!-- Logo in footer -->
-              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 16px auto;">
-                <tr>
-                  <td>
-                    <img 
-          src="cid:headerlogo" 
-          alt="Header" 
-          width="150" 
-          height="40"
-          style="display: block; margin: 0 auto 24px auto;"
-        />
-                  </td>
-                </tr>
-              </table>
-              
-              <p style="color: rgba(255, 255, 255, 0.5); font-size: 13px; margin: 0 0 8px 0; line-height: 1.6;">
-                AI-powered news summaries for busy professionals and casuals
-              </p>
-              
-              <p style="color: rgba(255, 255, 255, 0.3); font-size: 11px; margin: 16px 0 0 0;">
-                © 2025 Header News. All rights reserved.
-              </p>
-              
-            </td>
-          </tr>
-          
-        </table>
-        
-        <!-- Bottom note -->
-        <p style="color: #94a3b8; font-size: 11px; margin: 20px 0 0 0; text-align: center;">
-          This is an automated email regarding your account deletion request.
-        </p>
-        
-      </td>
-    </tr>
-  </table>
-  
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account Deletion Warning | Header</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7fa;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    "
+  >
+    <!-- Wrapper -->
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      style="background-color: #f4f7fa; padding: 40px 20px"
+    >
+      <tr>
+        <td align="center">
+          <!-- Main Container -->
+          <table
+            role="presentation"
+            width="600"
+            cellspacing="0"
+            cellpadding="0"
+            style="
+              background-color: #ffffff;
+              border-radius: 16px;
+              overflow: hidden;
+              box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            "
+          >
+            <!-- Header with Warning Theme -->
+            <tr>
+              <td
+                style="
+                  background-color: #0f172a;
+                  padding: 40px 40px;
+                  text-align: center;
+                  position: relative;
+                "
+              >
+                <!-- Logo -->
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin: 0 auto 24px auto"
+                >
+                  <tr>
+                    <td>
+                      <!-- Use cid: to reference the attached image -->
+                      <img
+                        src="cid:headerlogo"
+                        alt="Header"
+                        width="200"
+                        style="display: block; margin: 0 auto 24px auto"
+                      />
+                    </td>
+                  </tr>
+                </table>
+
+                <h1
+                  style="
+                    color: #ffffff;
+                    margin: 0;
+                    font-size: 24px;
+                    font-weight: 700;
+                    letter-spacing: -0.5px;
+                  "
+                >
+                  Your account is scheduled for deletion
+                </h1>
+                <p
+                  style="
+                    color: rgba(255, 255, 255, 0.7);
+                    margin: 12px 0 0 0;
+                    font-size: 15px;
+                  "
+                >
+                  Action required if you want to keep your account
+                </p>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding: 48px 40px">
+                <!-- Greeting -->
+                <p
+                  style="
+                    color: #0f172a;
+                    font-size: 17px;
+                    margin: 0 0 20px 0;
+                    line-height: 1.6;
+                  "
+                >
+                  Hi <strong>${userName}</strong>,
+                </p>
+
+                <p
+                  style="
+                    color: #64748b;
+                    font-size: 15px;
+                    margin: 0 0 24px 0;
+                    line-height: 1.7;
+                  "
+                >
+                  We received a request to delete your Header account. Your
+                  account and all associated data will be
+                  <strong>permanently deleted</strong> on:
+                </p>
+
+                <!-- Deletion Date Box -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin: 0 0 32px 0"
+                >
+                  <tr>
+                    <td
+                      style="
+                        background-color: #fef2f2;
+                        border: 1px solid #fecaca;
+                        border-radius: 12px;
+                        padding: 20px;
+                        text-align: center;
+                      "
+                    >
+                      <p
+                        style="
+                          color: #991b1b;
+                          font-size: 13px;
+                          font-weight: 600;
+                          margin: 0 0 8px 0;
+                          text-transform: uppercase;
+                          letter-spacing: 0.5px;
+                        "
+                      >
+                        Scheduled Deletion Date
+                      </p>
+                      <p
+                        style="
+                          color: #dc2626;
+                          font-size: 20px;
+                          font-weight: 700;
+                          margin: 0;
+                        "
+                      >
+                        ${formattedDate}
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- What will be deleted -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="
+                    background-color: #f8fafc;
+                    border-radius: 12px;
+                    margin-bottom: 32px;
+                  "
+                >
+                  <tr>
+                    <td style="padding: 24px">
+                      <p
+                        style="
+                          color: #0f172a;
+                          font-size: 14px;
+                          font-weight: 600;
+                          margin: 0 0 16px 0;
+                        "
+                      >
+                        What will be permanently deleted:
+                      </p>
+                      <table
+                        role="presentation"
+                        cellspacing="0"
+                        cellpadding="0"
+                      >
+                        <tr>
+                          <td style="padding: 6px 0">
+                            <span style="color: #dc2626; margin-right: 10px"
+                              >✕</span
+                            >
+                            <span style="color: #64748b; font-size: 14px"
+                              >All your saved articles</span
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 6px 0">
+                            <span style="color: #dc2626; margin-right: 10px"
+                              >✕</span
+                            >
+                            <span style="color: #64748b; font-size: 14px"
+                              >Your reading preferences and history</span
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 6px 0">
+                            <span style="color: #dc2626; margin-right: 10px"
+                              >✕</span
+                            >
+                            <span style="color: #64748b; font-size: 14px"
+                              >Active subscriptions (no refunds)</span
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 6px 0">
+                            <span style="color: #dc2626; margin-right: 10px"
+                              >✕</span
+                            >
+                            <span style="color: #64748b; font-size: 14px"
+                              >Your account and login credentials</span
+                            >
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Changed your mind section -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="
+                    background-color: #f0fdf4;
+                    border: 1px solid #bbf7d0;
+                    border-radius: 12px;
+                    margin-bottom: 32px;
+                  "
+                >
+                  <tr>
+                    <td style="padding: 24px">
+                      <p
+                        style="
+                          color: #166534;
+                          font-size: 15px;
+                          font-weight: 600;
+                          margin: 0 0 12px 0;
+                        "
+                      >
+                        Changed your mind?
+                      </p>
+                      <p
+                        style="
+                          color: #15803d;
+                          font-size: 14px;
+                          margin: 0;
+                          line-height: 1.6;
+                        "
+                      >
+                        You can cancel the deletion anytime before the scheduled
+                        date. Simply log in to your account and click "Cancel
+                        Deletion" on the deletion notice page.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- CTA Button -->
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin: 0 auto 32px auto"
+                >
+                  <tr>
+                    <td
+                      align="center"
+                      style="background-color: #0f172a; border-radius: 12px"
+                    >
+                      <a
+                        href="${loginLink}"
+                        target="_blank"
+                        style="
+                          display: inline-block;
+                          padding: 16px 48px;
+                          color: #ffffff;
+                          font-size: 15px;
+                          font-weight: 600;
+                          text-decoration: none;
+                        "
+                      >
+                        Log in to cancel deletion →
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Alternative Link -->
+                <p style="color: #94a3b8; font-size: 13px; margin: 0 0 10px 0">
+                  Button not working? Copy and paste this link:
+                </p>
+                <p
+                  style="
+                    background-color: #f1f5f9;
+                    padding: 12px 14px;
+                    border-radius: 8px;
+                    word-break: break-all;
+                    margin: 0 0 32px 0;
+                  "
+                >
+                  <a
+                    href="${loginLink}"
+                    style="
+                      color: #2563eb;
+                      font-size: 12px;
+                      text-decoration: none;
+                    "
+                  >
+                    ${loginLink}
+                  </a>
+                </p>
+
+                <!-- Divider -->
+                <hr
+                  style="
+                    border: none;
+                    border-top: 1px solid #e2e8f0;
+                    margin: 32px 0;
+                  "
+                />
+
+                <!-- Security Notice -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                >
+                  <tr>
+                    <td style="padding: 0">
+                      <p
+                        style="
+                          color: #94a3b8;
+                          font-size: 13px;
+                          margin: 0;
+                          line-height: 1.6;
+                        "
+                      >
+                        <strong style="color: #64748b"
+                          >Didn't request this?</strong
+                        ><br />
+                        If you didn't request account deletion, please log in
+                        immediately and cancel the deletion. Then change your
+                        password to secure your account. If you need help,
+                        contact us at
+                        <a
+                          href="mailto:${process.env.EMAIL_APP}"
+                          style="color: #2563eb; text-decoration: none"
+                          >${process.env.EMAIL_APP}</a
+                        >.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                style="
+                  background-color: #0f172a;
+                  padding: 32px 40px;
+                  text-align: center;
+                "
+              >
+                <!-- Logo in footer -->
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin: 0 auto 16px auto"
+                >
+                  <tr>
+                    <td>
+                      <img
+                        src="cid:headerlogo"
+                        alt="Header"
+                        width="200"
+                        style="display: block; margin: 0 auto 24px auto"
+                      />
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  style="
+                    color: rgba(255, 255, 255, 0.5);
+                    font-size: 13px;
+                    margin: 0 0 8px 0;
+                    line-height: 1.6;
+                  "
+                >
+                  AI-powered news summaries for busy professionals and casuals
+                </p>
+
+                <p
+                  style="
+                    color: rgba(255, 255, 255, 0.3);
+                    font-size: 11px;
+                    margin: 16px 0 0 0;
+                  "
+                >
+                  © 2025 Header News. All rights reserved.
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Bottom note -->
+          <p
+            style="
+              color: #94a3b8;
+              font-size: 11px;
+              margin: 20px 0 0 0;
+              text-align: center;
+            "
+          >
+            This is an automated email regarding your account deletion request.
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>
+
     `,
   };
 
@@ -2172,51 +2404,492 @@ async function sendTrialEndingEmail(userEmail, userName, trialEndTimestamp) {
       day: "numeric",
     }
   );
+  const manageLink = `${URL}/content`;
 
   const mailOptions = {
     from: `"Header App" <${process.env.EMAIL_APP}>`,
     to: userEmail,
     subject: "Your Header trial is ending soon",
+    attachments: [
+      {
+        filename: "logo.png",
+        path: path.join(__dirname, "..", "public", "logo.png"),
+        cid: "headerlogo",
+      },
+    ],
     html: `
       <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-      </head>
-      <body style="font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 40px 20px; background-color: #f4f7fa;">
-        <table width="600" style="margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
-          <tr>
-            <td style="background-color: #0f172a; padding: 40px; text-align: center;">
-              <h1 style="color: white; margin: 0; font-size: 24px;">Your trial ends on ${trialEndDate}</h1>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 40px;">
-              <p style="color: #0f172a; font-size: 17px;">Hi <strong>${userName}</strong>,</p>
-              <p style="color: #64748b; font-size: 15px; line-height: 1.7;">
-                We hope you've been enjoying Header! Your free trial is ending soon. 
-                After your trial ends, you'll be charged €5/month (or €50/year if you chose annual billing).
-              </p>
-              <p style="color: #64748b; font-size: 15px; line-height: 1.7;">
-                If you'd like to continue using Header's premium features, no action is needed - your subscription will start automatically.
-              </p>
-              <p style="color: #64748b; font-size: 15px; line-height: 1.7;">
-                If you'd prefer not to continue, you can cancel anytime before your trial ends.
-              </p>
-              <table style="margin: 32px auto;">
-                <tr>
-                  <td style="background-color: #0f172a; border-radius: 12px;">
-                    <a href="${URL}/content" style="display: inline-block; padding: 16px 48px; color: white; text-decoration: none; font-weight: 600;">
-                      Manage Subscription
-                    </a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-      </html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trial Ending Soon | Header</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7fa;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    "
+  >
+    <!-- Wrapper -->
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      style="background-color: #f4f7fa; padding: 40px 20px"
+    >
+      <tr>
+        <td align="center">
+          <!-- Main Container -->
+          <table
+            role="presentation"
+            width="600"
+            cellspacing="0"
+            cellpadding="0"
+            style="
+              background-color: #ffffff;
+              border-radius: 16px;
+              overflow: hidden;
+              box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            "
+          >
+            <!-- Header -->
+            <tr>
+              <td
+                style="
+                  background-color: #0f172a;
+                  padding: 40px 40px;
+                  text-align: center;
+                  position: relative;
+                "
+              >
+                <!-- Logo -->
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin: 0 auto 24px auto"
+                >
+                  <tr>
+                    <td>
+                      <img
+                        src="cid:headerlogo"
+                        alt="Header"
+                        width="200"
+                        style="display: block; margin: 0 auto"
+                      />
+                    </td>
+                  </tr>
+                </table>
+
+                <h1
+                  style="
+                    color: #ffffff;
+                    margin: 0;
+                    font-size: 24px;
+                    font-weight: 700;
+                    letter-spacing: -0.5px;
+                  "
+                >
+                  Your trial is ending soon
+                </h1>
+                <p
+                  style="
+                    color: rgba(255, 255, 255, 0.7);
+                    margin: 12px 0 0 0;
+                    font-size: 15px;
+                  "
+                >
+                  Just a friendly reminder about your subscription
+                </p>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding: 48px 40px">
+                <!-- Greeting -->
+                <p
+                  style="
+                    color: #0f172a;
+                    font-size: 17px;
+                    margin: 0 0 20px 0;
+                    line-height: 1.6;
+                  "
+                >
+                  Hi <strong>${userName}</strong>,
+                </p>
+
+                <p
+                  style="
+                    color: #64748b;
+                    font-size: 15px;
+                    margin: 0 0 24px 0;
+                    line-height: 1.7;
+                  "
+                >
+                  We hope you've been enjoying Header! Your free trial is ending
+                  soon and we wanted to give you a heads up.
+                </p>
+
+                <!-- Trial End Date Box -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin: 0 0 32px 0"
+                >
+                  <tr>
+                    <td
+                      style="
+                        background-color: #fefce8;
+                        border: 1px solid #fef08a;
+                        border-radius: 12px;
+                        padding: 20px;
+                        text-align: center;
+                      "
+                    >
+                      <p
+                        style="
+                          color: #a16207;
+                          font-size: 13px;
+                          font-weight: 600;
+                          margin: 0 0 8px 0;
+                          text-transform: uppercase;
+                          letter-spacing: 0.5px;
+                        "
+                      >
+                        Trial Ends On
+                      </p>
+                      <p
+                        style="
+                          color: #ca8a04;
+                          font-size: 20px;
+                          font-weight: 700;
+                          margin: 0;
+                        "
+                      >
+                        ${trialEndDate}
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- What happens next -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="
+                    background-color: #f8fafc;
+                    border-radius: 12px;
+                    margin-bottom: 32px;
+                  "
+                >
+                  <tr>
+                    <td style="padding: 24px">
+                      <p
+                        style="
+                          color: #0f172a;
+                          font-size: 14px;
+                          font-weight: 600;
+                          margin: 0 0 16px 0;
+                        "
+                      >
+                        What happens next:
+                      </p>
+                      <table
+                        role="presentation"
+                        cellspacing="0"
+                        cellpadding="0"
+                      >
+                        <tr>
+                          <td style="padding: 6px 0">
+                            <span style="color: #2563eb; margin-right: 10px"
+                              >✓</span
+                            >
+                            <span style="color: #64748b; font-size: 14px"
+                              >Your subscription will start automatically</span
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 6px 0">
+                            <span style="color: #2563eb; margin-right: 10px"
+                              >✓</span
+                            >
+                            <span style="color: #64748b; font-size: 14px"
+                              >You'll officially become a paid Header user</span
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 6px 0">
+                            <span style="color: #2563eb; margin-right: 10px"
+                              >✓</span
+                            >
+                            <span style="color: #64748b; font-size: 14px"
+                              >Continue enjoying all premium features</span
+                            >
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Not ready section -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="
+                    background-color: #f0fdf4;
+                    border: 1px solid #bbf7d0;
+                    border-radius: 12px;
+                    margin-bottom: 32px;
+                  "
+                >
+                  <tr>
+                    <td style="padding: 24px">
+                      <p
+                        style="
+                          color: #166534;
+                          font-size: 15px;
+                          font-weight: 600;
+                          margin: 0 0 12px 0;
+                        "
+                      >
+                        Want to continue? No action needed!
+                      </p>
+                      <p
+                        style="
+                          color: #15803d;
+                          font-size: 14px;
+                          margin: 0;
+                          line-height: 1.6;
+                        "
+                      >
+                        If you'd like to keep using Header's premium features,
+                        you don't need to do anything. Your subscription will
+                        start automatically after your trial ends.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Cancel note -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="
+                    background-color: #fef2f2;
+                    border: 1px solid #fecaca;
+                    border-radius: 12px;
+                    margin-bottom: 32px;
+                  "
+                >
+                  <tr>
+                    <td style="padding: 24px">
+                      <p
+                        style="
+                          color: #991b1b;
+                          font-size: 15px;
+                          font-weight: 600;
+                          margin: 0 0 12px 0;
+                        "
+                      >
+                        Changed your mind?
+                      </p>
+                      <p
+                        style="
+                          color: #b91c1c;
+                          font-size: 14px;
+                          margin: 0;
+                          line-height: 1.6;
+                        "
+                      >
+                        You can cancel anytime before your trial ends. Just
+                        visit your account settings and manage your
+                        subscription.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- CTA Button -->
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin: 0 auto 32px auto"
+                >
+                  <tr>
+                    <td
+                      align="center"
+                      style="background-color: #0f172a; border-radius: 12px"
+                    >
+                      <a
+                        href="${manageLink}"
+                        target="_blank"
+                        style="
+                          display: inline-block;
+                          padding: 16px 48px;
+                          color: #ffffff;
+                          font-size: 15px;
+                          font-weight: 600;
+                          text-decoration: none;
+                        "
+                      >
+                        Manage Subscription →
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Alternative Link -->
+                <p style="color: #94a3b8; font-size: 13px; margin: 0 0 10px 0">
+                  Button not working? Copy and paste this link:
+                </p>
+                <p
+                  style="
+                    background-color: #f1f5f9;
+                    padding: 12px 14px;
+                    border-radius: 8px;
+                    word-break: break-all;
+                    margin: 0 0 32px 0;
+                  "
+                >
+                  <a
+                    href="${manageLink}"
+                    style="
+                      color: #2563eb;
+                      font-size: 12px;
+                      text-decoration: none;
+                    "
+                  >
+                    ${manageLink}
+                  </a>
+                </p>
+
+                <!-- Divider -->
+                <hr
+                  style="
+                    border: none;
+                    border-top: 1px solid #e2e8f0;
+                    margin: 32px 0;
+                  "
+                />
+
+                <!-- Questions -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                >
+                  <tr>
+                    <td style="padding: 0">
+                      <p
+                        style="
+                          color: #94a3b8;
+                          font-size: 13px;
+                          margin: 0;
+                          line-height: 1.6;
+                        "
+                      >
+                        <strong style="color: #64748b">Questions?</strong><br />
+                        If you have any questions about your subscription or
+                        need help, feel free to reach out to us at
+                        <a
+                          href="mailto:${process.env.EMAIL_APP}"
+                          style="color: #2563eb; text-decoration: none"
+                          >${process.env.EMAIL_APP}</a
+                        >.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                style="
+                  background-color: #0f172a;
+                  padding: 32px 40px;
+                  text-align: center;
+                "
+              >
+                <!-- Logo in footer -->
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin: 0 auto 16px auto"
+                >
+                  <tr>
+                    <td>
+                      <img
+                        src="cid:headerlogo"
+                        alt="Header"
+                        width="200"
+                        style="display: block; margin: 0 auto"
+                      />
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  style="
+                    color: rgba(255, 255, 255, 0.5);
+                    font-size: 13px;
+                    margin: 0 0 8px 0;
+                    line-height: 1.6;
+                  "
+                >
+                  AI-powered news summaries for busy professionals and casuals
+                </p>
+
+                <p
+                  style="
+                    color: rgba(255, 255, 255, 0.3);
+                    font-size: 11px;
+                    margin: 16px 0 0 0;
+                  "
+                >
+                  © 2025 Header News. All rights reserved.
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Bottom note -->
+          <p
+            style="
+              color: #94a3b8;
+              font-size: 11px;
+              margin: 20px 0 0 0;
+              text-align: center;
+            "
+          >
+            This is an automated reminder about your Header trial subscription.
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+
     `,
   };
 
@@ -2396,156 +3069,338 @@ async function sendVeri(userEmail, token, userName) {
     from: `"Header App" <${process.env.EMAIL_APP}>`,
     to: userEmail,
     subject: "Verify your Header account",
+    attachments: [
+      {
+        filename: "logo.png",
+        path: path.join(__dirname, "..", "public", "logo.png"),
+        cid: "headerlogo",
+      },
+    ],
     html: `
       <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verify Your Email | Header</title>
-</head>
-<body style="margin: 0; padding: 0; background-color: #f4f7fa; font-family: 'Segoe UI', Arial, sans-serif;">
-  
-  <!-- Wrapper -->
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f4f7fa; padding: 40px 20px;">
-    <tr>
-      <td align="center">
-        
-        <!-- Main Container -->
-        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);">
-          
-          <!-- Header with Dark Theme -->
-          <tr>
-            <td style="background-color: #0f172a; padding: 40px 40px; text-align: center; position: relative;">
-              
-              <!-- Logo -->
-              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 24px auto;">
-                <tr>
-                  <td>
-                    <span style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -1px; font-family: 'Segoe UI', Arial, sans-serif;">Header</span>
-                    <span style="font-size: 20px; color: #2563eb; position: relative; top: -8px; margin-left: 2px;"><sup>✦</sup></span>
-                  </td>
-                </tr>
-              </table>
-              
-              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">
-                Verify your email address
-              </h1>
-              <p style="color: rgba(255, 255, 255, 0.7); margin: 12px 0 0 0; font-size: 15px;">
-                You're one step away from your personalized news feed
-              </p>
-            </td>
-          </tr>
-          
-          <!-- Body -->
-          <tr>
-            <td style="padding: 48px 40px;">
-              
-              <!-- Greeting -->
-              <p style="color: #0f172a; font-size: 17px; margin: 0 0 20px 0; line-height: 1.6;">
-                Hi <strong>${userName}</strong>,
-              </p>
-              
-              <p style="color: #64748b; font-size: 15px; margin: 0 0 32px 0; line-height: 1.7;">
-                Thanks for signing up for Header! To start receiving your personalized AI news summaries, please verify your email address by clicking the button below.
-              </p>
-              
-              <!-- CTA Button -->
-              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 32px auto;">
-                <tr>
-                  <td align="center" style="background-color: #0f172a; border-radius: 12px;">
-                    <a href="${verificationLink}" target="_blank" style="display: inline-block; padding: 16px 48px; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none;">
-                      Verify my email →
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              
-              <!-- What you'll get -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border-radius: 12px; margin-bottom: 32px;">
-                <tr>
-                  <td style="padding: 24px;">
-                    <p style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 16px 0;">
-                      Some notes to keep your account safe:
-                    </p>
-                    <table role="presentation" cellspacing="0" cellpadding="0">
-                      <tr>
-                        <td style="padding: 6px 0;">
-                          <span style="color: #2563eb; margin-right: 10px;">⏰</span>
-                          <span style="color: #64748b; font-size: 14px;">This link expires in 24 hours.</span>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-              
-              <!-- Alternative Link -->
-              <p style="color: #94a3b8; font-size: 13px; margin: 0 0 10px 0;">
-                Button not working? Copy and paste this link:
-              </p>
-              <p style="background-color: #f1f5f9; padding: 12px 14px; border-radius: 8px; word-break: break-all; margin: 0 0 32px 0;">
-                <a href="${verificationLink}" style="color: #2563eb; font-size: 12px; text-decoration: none;">
-                  ${verificationLink}
-                </a>
-              </p>
-              
-              <!-- Divider -->
-              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;">
-              
-              <!-- Security Notice -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td style="padding: 0;">
-                    <p style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.6;">
-                      <strong style="color: #64748b;">Didn't sign up for Header?</strong><br>
-                      No worries — just ignore this email and your address won't be used.
-                    </p>
-                  </td>
-                </tr>
-              </table>
-              
-            </td>
-          </tr>
-          
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #0f172a; padding: 32px 40px; text-align: center;">
-              
-              <!-- Logo in footer -->
-              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 16px auto;">
-                <tr>
-                  <td>
-                    <span style="font-size: 18px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; font-family: 'Segoe UI', Arial, sans-serif;">Header</span>
-                    <span style="font-size: 14px; color: #2563eb; position: relative; top: -4px; margin-left: 1px;"><sup>✦</sup></span>
-                  </td>
-                </tr>
-              </table>
-              
-              <p style="color: rgba(255, 255, 255, 0.5); font-size: 13px; margin: 0 0 8px 0; line-height: 1.6;">
-                AI-powered news summaries for busy professionals and casuals
-              </p>
-              
-              <p style="color: rgba(255, 255, 255, 0.3); font-size: 11px; margin: 16px 0 0 0;">
-                © 2025 Header News. All rights reserved.
-              </p>
-              
-            </td>
-          </tr>
-          
-        </table>
-        
-        <!-- Bottom note -->
-        <p style="color: #94a3b8; font-size: 11px; margin: 20px 0 0 0; text-align: center;">
-          This is a one-time verification email from Header.
-        </p>
-        
-      </td>
-    </tr>
-  </table>
-  
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Your Email | Header</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7fa;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    "
+  >
+    <!-- Wrapper -->
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      style="background-color: #f4f7fa; padding: 40px 20px"
+    >
+      <tr>
+        <td align="center">
+          <!-- Main Container -->
+          <table
+            role="presentation"
+            width="600"
+            cellspacing="0"
+            cellpadding="0"
+            style="
+              background-color: #ffffff;
+              border-radius: 16px;
+              overflow: hidden;
+              box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            "
+          >
+            <!-- Header with Dark Theme -->
+            <tr>
+              <td
+                style="
+                  background-color: #0f172a;
+                  padding: 40px 40px;
+                  text-align: center;
+                  position: relative;
+                "
+              >
+                <!-- Logo -->
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin: 0 auto 24px auto"
+                >
+                  <tr>
+                    <td>
+                      <img
+                        src="cid:headerlogo"
+                        alt="Header"
+                        width="200"
+                        style="display: block; margin: 0 auto"
+                      />
+                    </td>
+                  </tr>
+                </table>
+
+                <h1
+                  style="
+                    color: #ffffff;
+                    margin: 0;
+                    font-size: 24px;
+                    font-weight: 700;
+                    letter-spacing: -0.5px;
+                  "
+                >
+                  Verify your email address
+                </h1>
+                <p
+                  style="
+                    color: rgba(255, 255, 255, 0.7);
+                    margin: 12px 0 0 0;
+                    font-size: 15px;
+                  "
+                >
+                  You're one step away from your personalized news feed
+                </p>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding: 48px 40px">
+                <!-- Greeting -->
+                <p
+                  style="
+                    color: #0f172a;
+                    font-size: 17px;
+                    margin: 0 0 20px 0;
+                    line-height: 1.6;
+                  "
+                >
+                  Hi <strong>${userName}</strong>,
+                </p>
+
+                <p
+                  style="
+                    color: #64748b;
+                    font-size: 15px;
+                    margin: 0 0 32px 0;
+                    line-height: 1.7;
+                  "
+                >
+                  Thanks for signing up for Header! To start receiving your
+                  personalized AI news summaries, please verify your email
+                  address by clicking the button below.
+                </p>
+
+                <!-- CTA Button -->
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin: 0 auto 32px auto"
+                >
+                  <tr>
+                    <td
+                      align="center"
+                      style="background-color: #0f172a; border-radius: 12px"
+                    >
+                      <a
+                        href="${verificationLink}"
+                        target="_blank"
+                        style="
+                          display: inline-block;
+                          padding: 16px 48px;
+                          color: #ffffff;
+                          font-size: 15px;
+                          font-weight: 600;
+                          text-decoration: none;
+                        "
+                      >
+                        Verify my email →
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- What you'll get -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="
+                    background-color: #f8fafc;
+                    border-radius: 12px;
+                    margin-bottom: 32px;
+                  "
+                >
+                  <tr>
+                    <td style="padding: 24px">
+                      <p
+                        style="
+                          color: #0f172a;
+                          font-size: 14px;
+                          font-weight: 600;
+                          margin: 0 0 16px 0;
+                        "
+                      >
+                        Some notes to keep your account safe:
+                      </p>
+                      <table
+                        role="presentation"
+                        cellspacing="0"
+                        cellpadding="0"
+                      >
+                        <tr>
+                          <td style="padding: 6px 0">
+                            <span style="color: #2563eb; margin-right: 10px"
+                              >⏰</span
+                            >
+                            <span style="color: #64748b; font-size: 14px"
+                              >This link expires in 24 hours.</span
+                            >
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Alternative Link -->
+                <p style="color: #94a3b8; font-size: 13px; margin: 0 0 10px 0">
+                  Button not working? Copy and paste this link:
+                </p>
+                <p
+                  style="
+                    background-color: #f1f5f9;
+                    padding: 12px 14px;
+                    border-radius: 8px;
+                    word-break: break-all;
+                    margin: 0 0 32px 0;
+                  "
+                >
+                  <a
+                    href="${verificationLink}"
+                    style="
+                      color: #2563eb;
+                      font-size: 12px;
+                      text-decoration: none;
+                    "
+                  >
+                    ${verificationLink}
+                  </a>
+                </p>
+
+                <!-- Divider -->
+                <hr
+                  style="
+                    border: none;
+                    border-top: 1px solid #e2e8f0;
+                    margin: 32px 0;
+                  "
+                />
+
+                <!-- Security Notice -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                >
+                  <tr>
+                    <td style="padding: 0">
+                      <p
+                        style="
+                          color: #94a3b8;
+                          font-size: 13px;
+                          margin: 0;
+                          line-height: 1.6;
+                        "
+                      >
+                        <strong style="color: #64748b"
+                          >Didn't sign up for Header?</strong
+                        ><br />
+                        No worries — just ignore this email and your address
+                        won't be used.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                style="
+                  background-color: #0f172a;
+                  padding: 32px 40px;
+                  text-align: center;
+                "
+              >
+                <!-- Logo in footer -->
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin: 0 auto 16px auto"
+                >
+                  <tr>
+                    <td>
+                      <img
+                        src="cid:headerlogo"
+                        alt="Header"
+                        width="200"
+                        style="display: block; margin: 0 auto"
+                      />
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  style="
+                    color: rgba(255, 255, 255, 0.5);
+                    font-size: 13px;
+                    margin: 0 0 8px 0;
+                    line-height: 1.6;
+                  "
+                >
+                  AI-powered news summaries for busy professionals and casuals
+                </p>
+
+                <p
+                  style="
+                    color: rgba(255, 255, 255, 0.3);
+                    font-size: 11px;
+                    margin: 16px 0 0 0;
+                  "
+                >
+                  © 2025 Header News. All rights reserved.
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Bottom note -->
+          <p
+            style="
+              color: #94a3b8;
+              font-size: 11px;
+              margin: 20px 0 0 0;
+              text-align: center;
+            "
+          >
+            This is a one-time verification email from Header.
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>
+
     `,
   };
 
@@ -2563,135 +3418,290 @@ async function sendReset(userEmail, resetToken, userName) {
     from: `"Header App" <${process.env.EMAIL_APP}>`,
     to: userEmail,
     subject: "Password Change on Header",
+    attachments: [
+      {
+        filename: "logo.png",
+        path: path.join(__dirname, "..", "public", "logo.png"),
+        cid: "headerlogo",
+      },
+    ],
     html: `
       <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Password Change Request | Header</title>
-</head>
-<body style="margin: 0; padding: 0; background-color: #f4f7fa; font-family: 'Segoe UI', Arial, sans-serif;">
-  
-  <!-- Wrapper -->
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f4f7fa; padding: 40px 20px;">
-    <tr>
-      <td align="center">
-        
-        <!-- Main Container -->
-        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);">
-          
-          <tr>
-            <td style="background-color: #0f172a; padding: 40px 40px; text-align: center; position: relative;">
-              
-              <!-- Logo -->
-              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 24px auto;">
-                <tr>
-                  <td>
-                    <span style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -1px; font-family: 'Segoe UI', Arial, sans-serif;">Header</span>
-                    <span style="font-size: 20px; color: #2563eb; position: relative; top: -8px; margin-left: 2px;"><sup>✦</sup></span>
-                  </td>
-                </tr>
-              </table>
-              
-              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">
-                Change your password here.
-              </h1>
-              <p style="color: rgba(255, 255, 255, 0.7); margin: 12px 0 0 0; font-size: 15px;">
-                Lost or forgot your password? Let's change it!
-              </p>
-            </td>
-          </tr>
-          
-          <!-- Body -->
-          <tr>
-            <td style="padding: 48px 40px;">
-              
-              <!-- Greeting -->
-              <p style="color: #0f172a; font-size: 17px; margin: 0 0 20px 0; line-height: 1.6;">
-                Hi <strong>${userName}</strong>,
-              </p>
-              
-              <p style="color: #64748b; font-size: 15px; margin: 0 0 32px 0; line-height: 1.7;">
-                We have received your request to change your password. Please click the button below to confirm this action and enter your new password.
-              </p>
-              
-              <!-- CTA Button -->
-              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 32px auto;">
-                <tr>
-                  <td align="center" style="background-color: #0f172a; border-radius: 12px;">
-                    <a href="${resetLink}" target="_blank" style="display: inline-block; padding: 16px 48px; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none;">
-                      Change password →
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              
-              <!-- Alternative Link -->
-              <p style="color: #94a3b8; font-size: 13px; margin: 0 0 10px 0;">
-                Button not working? Copy and paste this link:
-              </p>
-              <p style="background-color: #f1f5f9; padding: 12px 14px; border-radius: 8px; word-break: break-all; margin: 0 0 32px 0;">
-                <a href="${resetLink}" style="color: #2563eb; font-size: 12px; text-decoration: none;">
-                  ${resetLink}
-                </a>
-              </p>
-              
-              <!-- Divider -->
-              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;">
-              
-              <!-- Security Notice -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td style="padding: 0;">
-                    <p style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.6;">
-                      <strong style="color: #64748b;">This email expires in 1 hour.</strong><br>
-                      Please retry if expires.
-                    </p>
-                  </td>
-                </tr>
-              </table>
-              
-            </td>
-          </tr>
-          
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #0f172a; padding: 32px 40px; text-align: center;">
-              
-              <!-- Logo in footer -->
-              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 16px auto;">
-                <tr>
-                  <td>
-                    <span style="font-size: 18px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; font-family: 'Segoe UI', Arial, sans-serif;">Header</span>
-                    <span style="font-size: 14px; color: #2563eb; position: relative; top: -4px; margin-left: 1px;"><sup>✦</sup></span>
-                  </td>
-                </tr>
-              </table>
-              
-              <p style="color: rgba(255, 255, 255, 0.5); font-size: 13px; margin: 0 0 8px 0; line-height: 1.6;">
-                AI-powered news summaries for busy professionals and casuals
-              </p>
-              
-              <p style="color: rgba(255, 255, 255, 0.3); font-size: 11px; margin: 16px 0 0 0;">
-                © 2025 Header News. All rights reserved.
-              </p>
-              
-            </td>
-          </tr>
-          
-        </table>
-        
-        <!-- Bottom note -->
-        <p style="color: #94a3b8; font-size: 11px; margin: 20px 0 0 0; text-align: center;">
-          This is an email to reset your password from Header.
-        </p>
-        
-      </td>
-    </tr>
-  </table>
-  
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Password Change Request | Header</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7fa;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    "
+  >
+    <!-- Wrapper -->
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      style="background-color: #f4f7fa; padding: 40px 20px"
+    >
+      <tr>
+        <td align="center">
+          <!-- Main Container -->
+          <table
+            role="presentation"
+            width="600"
+            cellspacing="0"
+            cellpadding="0"
+            style="
+              background-color: #ffffff;
+              border-radius: 16px;
+              overflow: hidden;
+              box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            "
+          >
+            <tr>
+              <td
+                style="
+                  background-color: #0f172a;
+                  padding: 40px 40px;
+                  text-align: center;
+                  position: relative;
+                "
+              >
+                <!-- Logo -->
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin: 0 auto 24px auto"
+                >
+                  <tr>
+                    <td>
+                      <img
+                        src="cid:headerlogo"
+                        alt="Header"
+                        width="200"
+                        style="display: block; margin: 0 auto"
+                      />
+                    </td>
+                  </tr>
+                </table>
+
+                <h1
+                  style="
+                    color: #ffffff;
+                    margin: 0;
+                    font-size: 24px;
+                    font-weight: 700;
+                    letter-spacing: -0.5px;
+                  "
+                >
+                  Requested Password Change
+                </h1>
+                <p
+                  style="
+                    color: rgba(255, 255, 255, 0.7);
+                    margin: 12px 0 0 0;
+                    font-size: 15px;
+                  "
+                >
+                  Lost or forgot your password? Let's change it!
+                </p>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding: 48px 40px">
+                <!-- Greeting -->
+                <p
+                  style="
+                    color: #0f172a;
+                    font-size: 17px;
+                    margin: 0 0 20px 0;
+                    line-height: 1.6;
+                  "
+                >
+                  Hi <strong>${userName}</strong>,
+                </p>
+
+                <p
+                  style="
+                    color: #64748b;
+                    font-size: 15px;
+                    margin: 0 0 32px 0;
+                    line-height: 1.7;
+                  "
+                >
+                  We have received your request to change your password. Please
+                  click the button below to confirm this action and enter your
+                  new password.
+                </p>
+
+                <!-- CTA Button -->
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin: 0 auto 32px auto"
+                >
+                  <tr>
+                    <td
+                      align="center"
+                      style="background-color: #0f172a; border-radius: 12px"
+                    >
+                      <a
+                        href="${resetLink}"
+                        target="_blank"
+                        style="
+                          display: inline-block;
+                          padding: 16px 48px;
+                          color: #ffffff;
+                          font-size: 15px;
+                          font-weight: 600;
+                          text-decoration: none;
+                        "
+                      >
+                        Change password →
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Alternative Link -->
+                <p style="color: #94a3b8; font-size: 13px; margin: 0 0 10px 0">
+                  Button not working? Copy and paste this link:
+                </p>
+                <p
+                  style="
+                    background-color: #f1f5f9;
+                    padding: 12px 14px;
+                    border-radius: 8px;
+                    word-break: break-all;
+                    margin: 0 0 32px 0;
+                  "
+                >
+                  <a
+                    href="${resetLink}"
+                    style="
+                      color: #2563eb;
+                      font-size: 12px;
+                      text-decoration: none;
+                    "
+                  >
+                    ${resetLink}
+                  </a>
+                </p>
+
+                <!-- Divider -->
+                <hr
+                  style="
+                    border: none;
+                    border-top: 1px solid #e2e8f0;
+                    margin: 32px 0;
+                  "
+                />
+
+                <!-- Security Notice -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                >
+                  <tr>
+                    <td style="padding: 0">
+                      <p
+                        style="
+                          color: #94a3b8;
+                          font-size: 13px;
+                          margin: 0;
+                          line-height: 1.6;
+                        "
+                      >
+                        <strong style="color: #64748b"
+                          >This email expires in 1 hour.</strong
+                        ><br />
+                        Please retry if expires.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                style="
+                  background-color: #0f172a;
+                  padding: 32px 40px;
+                  text-align: center;
+                "
+              >
+                <!-- Logo in footer -->
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin: 0 auto 16px auto"
+                >
+                  <tr>
+                    <td>
+                      <img
+                        src="cid:headerlogo"
+                        alt="Header"
+                        width="200"
+                        style="display: block; margin: 0 auto"
+                      />
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  style="
+                    color: rgba(255, 255, 255, 0.5);
+                    font-size: 13px;
+                    margin: 0 0 8px 0;
+                    line-height: 1.6;
+                  "
+                >
+                  AI-powered news summaries for busy professionals and casuals
+                </p>
+
+                <p
+                  style="
+                    color: rgba(255, 255, 255, 0.3);
+                    font-size: 11px;
+                    margin: 16px 0 0 0;
+                  "
+                >
+                  © 2025 Header News. All rights reserved.
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Bottom note -->
+          <p
+            style="
+              color: #94a3b8;
+              font-size: 11px;
+              margin: 20px 0 0 0;
+              text-align: center;
+            "
+          >
+            This is an email to reset your password from Header.
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>
     `,
   };
