@@ -236,7 +236,7 @@ const googleClient = new OAuth2Client(
 );
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
+  host: "smtp.zoho.eu",
   port: 587,
   secure: false, // Use STARTTLS
   auth: {
@@ -839,7 +839,7 @@ app.post(
     const contentLang = req.user.selectedContentLanguage || "en";
     const userEmail02 = req.body.email;
     const ArtId = req.body.artId;
-    const action = req.body.action;
+    const action = parseInt(req.body.action, 10);
 
     if (userEmail !== userEmail02) {
       res.clearCookie("jwt");
@@ -852,7 +852,7 @@ app.post(
       await session.startTransaction();
       // 1 = favorite, 2 = unfavorite
       if (action === 1) {
-        if (req.user.plan === "free" && req.user.savedArticles.length > 2) {
+        if (req.user.plan === "free" && req.user.savedArticles >= 3) {
           await session.abortTransaction();
           return res.sendStatus(405); // user cannot save more than 3 articles!
         }
@@ -1232,6 +1232,11 @@ app.post("/api/refresh/update-language", specialAuthToken, async (req, res) => {
   if (!isAllowed) {
     return res.sendStatus(503);
   }
+
+  if (!["en", "nl"].includes(req.body.language)) {
+    return res.sendStatus(400);
+  }
+
   try {
     if (req.body.language === "en") {
       if (currentLang === "en") {
@@ -1299,6 +1304,7 @@ app.post(
 
       // Check if user already has an active subscription in database
       if (
+        user.plan !== "free" ||
         user.subscription?.status === "active" ||
         user.subscription?.status === "trialing" ||
         user.subscription?.status === "past_due"
@@ -1392,6 +1398,7 @@ app.post(
           },
         ],
         mode: "subscription",
+        allow_promotion_codes: true,
         success_url: `${URL}/content?payment=success`,
         cancel_url: `${URL}/content?payment=canceled`,
         metadata: {
@@ -1657,6 +1664,13 @@ async function sendDeletionWarning(userEmail, userName, deleteDate) {
     from: `"Header App" <${process.env.EMAIL_APP}>`,
     to: userEmail,
     subject: "Your Header account is scheduled for deletion",
+    attachments: [
+      {
+        filename: "logo.png",
+        path: path.join(__dirname, "..", "public", "logo.png"),
+        cid: "headerlogo", // Content-ID to reference in HTML
+      },
+    ],
     html: `
       <!DOCTYPE html>
 <html lang="en">
@@ -1683,8 +1697,14 @@ async function sendDeletionWarning(userEmail, userName, deleteDate) {
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 24px auto;">
                 <tr>
                   <td>
-                    <span style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -1px; font-family: 'Segoe UI', Arial, sans-serif;">Header</span>
-                    <span style="font-size: 20px; color: #2563eb; position: relative; top: -8px; margin-left: 2px;"><sup>✦</sup></span>
+                    <!-- Use cid: to reference the attached image -->
+        <img 
+          src="cid:headerlogo" 
+          alt="Header" 
+          width="150" 
+          height="40"
+          style="display: block; margin: 0 auto 24px auto;"
+        />
                   </td>
                 </tr>
               </table>
@@ -1832,8 +1852,13 @@ async function sendDeletionWarning(userEmail, userName, deleteDate) {
               <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 16px auto;">
                 <tr>
                   <td>
-                    <span style="font-size: 18px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; font-family: 'Segoe UI', Arial, sans-serif;">Header</span>
-                    <span style="font-size: 14px; color: #2563eb; position: relative; top: -4px; margin-left: 1px;"><sup>✦</sup></span>
+                    <img 
+          src="cid:headerlogo" 
+          alt="Header" 
+          width="150" 
+          height="40"
+          style="display: block; margin: 0 auto 24px auto;"
+        />
                   </td>
                 </tr>
               </table>
