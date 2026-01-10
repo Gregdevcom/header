@@ -4528,7 +4528,7 @@ li {
 }
 
 /* =======================================================
-   ELEGANT BLACK GLASS SWIPE INDICATOR STYLES
+   TRUE BLACK GLASSMORPHISM SWIPE INDICATORS
    ======================================================= */
 
 .swipe-indicator {
@@ -4542,7 +4542,7 @@ li {
   z-index: 100;
 }
 
-/* Base "Smoky Black Glass" Style */
+/* True Glass Effect - Ultra-transparent dark background that blurs content */
 .swipe-indicator .indicator-content {
   display: flex;
   flex-direction: column;
@@ -4551,42 +4551,32 @@ li {
   padding: 20px 28px;
   border-radius: 24px;
 
-  /* The Smoky Black Glass Effect */
-  background: rgba(25, 25, 30, 0.3); /* A very dark, slightly blue-ish grey */
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  /* THE GLASS: Ultra-translucent dark background */
+  background: rgba(0, 0, 0, 0.15);
 
-  /* A very faint, sharp white edge for definition */
-  border: 1px solid transparent;
-  background-clip: padding-box, border-box;
-  background-origin: padding-box, border-box;
-  background-image: linear-gradient(
-      to right,
-      rgba(25, 25, 30, 0.3),
-      rgba(25, 25, 30, 0.3)
-    ),
-    /* The fill */
-      linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.15),
-        rgba(255, 255, 255, 0.05)
-      ); /* The border */
+  /* THE BLUR: This is what makes it glass! */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 
-  /* Standard dark shadow for depth */
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  /* Subtle white border for glass edge definition */
+  border: 1px solid rgba(255, 255, 255, 0.2);
 
-  /* Text & Icon Styling */
+  /* Inner shadow to simulate glass depth */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    /* Top edge light */ inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+    /* Bottom edge shadow */ 0 10px 40px rgba(0, 0, 0, 0.15); /* Outer drop shadow */
+
+  /* Text styling */
   color: #ffffff;
   font-weight: 600;
   font-size: 14px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); /* A stronger shadow for readability on glass */
-
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   transition: all 0.2s ease-in-out;
 }
 
 .swipe-indicator .indicator-content i {
   font-size: 32px;
-  color: rgba(255, 255, 255, 0.8); /* Icon is slightly transparent initially */
+  color: rgba(255, 255, 255, 0.9);
   transition: color 0.2s ease-in-out, text-shadow 0.2s ease-in-out;
 }
 
@@ -4612,32 +4602,27 @@ li {
   transform: translateX(-50%) translateY(-50%) scale(1);
 }
 
-/* --- Triggered State (when swipe threshold is met) --- */
-/* This is where the glass "lights up" */
-
+/* --- Triggered State (when threshold met) --- */
+/* Glass lights up with bright edge */
 .swipe-indicator.triggered .indicator-content {
-  /* Pop effect */
   transform: scale(1.05);
 
-  /* Make the glass slightly more solid */
-  background-color: rgba(35, 35, 40, 0.5);
+  /* Slightly less transparent when triggered */
+  background: rgba(0, 0, 0, 0.25);
 
-  /* A brighter, crisper white edge when triggered */
-  background-image: linear-gradient(
-      to right,
-      rgba(35, 35, 40, 0.5),
-      rgba(35, 35, 40, 0.5)
-    ),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.2));
+  /* Bright white edge for definition */
+  border: 1px solid rgba(255, 255, 255, 0.4);
 
-  /* The shadow becomes a subtle white "bloom" effect */
-  box-shadow: 0 0 50px rgba(255, 255, 255, 0.1), 0 0 20px rgba(0, 0, 0, 0.2);
+  /* Enhanced inner lighting */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    /* Brighter top edge */ inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    /* Bottom edge */ 0 0 40px rgba(255, 255, 255, 0.1),
+    /* Subtle white glow */ 0 10px 40px rgba(0, 0, 0, 0.15); /* Standard shadow */
 }
 
 .swipe-indicator.triggered .indicator-content i {
-  /* Make the icon shine pure white */
-  color: #fff;
-  text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
 }
 
 /* ==========================================
