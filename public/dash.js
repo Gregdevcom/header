@@ -1219,9 +1219,9 @@ class SwipeCard {
   constructor(cardElement, options = {}) {
     this.card = cardElement;
     this.options = {
-      swipeThreshold: 100, // px needed to trigger action
-      rotationMultiplier: 0.1, // how much card rotates while swiping
-      velocityThreshold: 0.5, // speed threshold for quick flicks
+      swipeThreshold: 100,
+      rotationMultiplier: 0.1,
+      velocityThreshold: 0.5,
       ...options,
     };
 
@@ -1239,6 +1239,12 @@ class SwipeCard {
     this.onSwipeUp = options.onSwipeUp || (() => {});
     this.onTap = options.onTap || (() => {});
 
+    // FIX: Store bound handlers so destroy() can remove them
+    this.boundHandleStart = this.handleStart.bind(this);
+    this.boundHandleMove = this.handleMove.bind(this);
+    this.boundHandleEnd = this.handleEnd.bind(this);
+    this.boundHandleCancel = this.handleCancel.bind(this);
+
     // Elements
     this.indicators = this.createIndicators();
 
@@ -1247,22 +1253,23 @@ class SwipeCard {
   }
 
   createIndicators() {
-    // Create swipe action indicators
+    // SWAPPED: Left indicator now shows "Next"
     const indicatorLeft = document.createElement("div");
     indicatorLeft.className = "swipe-indicator swipe-indicator-left";
     indicatorLeft.innerHTML = `
       <div class="indicator-content">
-        <i class="ph ph-arrow-left"></i>
-        <span>Previous</span>
+        <i class="ph ph-arrow-right"></i>
+        <span>Next</span>
       </div>
     `;
 
+    // SWAPPED: Right indicator now shows "Previous"
     const indicatorRight = document.createElement("div");
     indicatorRight.className = "swipe-indicator swipe-indicator-right";
     indicatorRight.innerHTML = `
       <div class="indicator-content">
-        <i class="ph ph-arrow-right"></i>
-        <span>Next</span>
+        <i class="ph ph-arrow-left"></i>
+        <span>Previous</span>
       </div>
     `;
 
@@ -1275,7 +1282,6 @@ class SwipeCard {
       </div>
     `;
 
-    // Add to card's parent container
     const container = this.card.parentElement;
     container.style.position = "relative";
     container.appendChild(indicatorLeft);
@@ -1286,20 +1292,20 @@ class SwipeCard {
   }
 
   bindEvents() {
-    // Touch events
-    this.card.addEventListener("touchstart", this.handleStart.bind(this), {
+    // Touch events - use stored bound handlers
+    this.card.addEventListener("touchstart", this.boundHandleStart, {
       passive: true,
     });
-    this.card.addEventListener("touchmove", this.handleMove.bind(this), {
+    this.card.addEventListener("touchmove", this.boundHandleMove, {
       passive: false,
     });
-    this.card.addEventListener("touchend", this.handleEnd.bind(this));
-    this.card.addEventListener("touchcancel", this.handleCancel.bind(this));
+    this.card.addEventListener("touchend", this.boundHandleEnd);
+    this.card.addEventListener("touchcancel", this.boundHandleCancel);
 
-    // Mouse events (for desktop testing)
-    this.card.addEventListener("mousedown", this.handleStart.bind(this));
-    document.addEventListener("mousemove", this.handleMove.bind(this));
-    document.addEventListener("mouseup", this.handleEnd.bind(this));
+    // Mouse events
+    this.card.addEventListener("mousedown", this.boundHandleStart);
+    document.addEventListener("mousemove", this.boundHandleMove);
+    document.addEventListener("mouseup", this.boundHandleEnd);
 
     // Prevent context menu on long press
     this.card.addEventListener("contextmenu", (e) => e.preventDefault());
@@ -1553,13 +1559,14 @@ class SwipeCard {
 
   // Clean up
   destroy() {
-    this.card.removeEventListener("touchstart", this.handleStart);
-    this.card.removeEventListener("touchmove", this.handleMove);
-    this.card.removeEventListener("touchend", this.handleEnd);
-    this.card.removeEventListener("touchcancel", this.handleCancel);
-    this.card.removeEventListener("mousedown", this.handleStart);
-    document.removeEventListener("mousemove", this.handleMove);
-    document.removeEventListener("mouseup", this.handleEnd);
+    // Now uses stored bound handlers so removal actually works
+    this.card.removeEventListener("touchstart", this.boundHandleStart);
+    this.card.removeEventListener("touchmove", this.boundHandleMove);
+    this.card.removeEventListener("touchend", this.boundHandleEnd);
+    this.card.removeEventListener("touchcancel", this.boundHandleCancel);
+    this.card.removeEventListener("mousedown", this.boundHandleStart);
+    document.removeEventListener("mousemove", this.boundHandleMove);
+    document.removeEventListener("mouseup", this.boundHandleEnd);
 
     Object.values(this.indicators).forEach((ind) => ind.remove());
   }
@@ -1577,57 +1584,54 @@ function initSwipeCard() {
   // Destroy previous instance if exists
   if (swipeController) {
     swipeController.destroy();
+    swipeController = null;
   }
 
   swipeController = new SwipeCard(card, {
     swipeThreshold: 80,
 
-    onSwipeRight: () => {
+    // SWAPPED: Swipe LEFT = Next article
+    onSwipeLeft: () => {
       if (currentIndex < contentNews.length - 1) {
         currentIndex++;
       } else {
         currentIndex = 0;
       }
-      renderCard(currentIndex, "right"); // Pass direction
-      showSwipeFeedback("next");
+      renderCard(currentIndex, "right");
+      // Removed showSwipeFeedback
     },
 
-    onSwipeLeft: () => {
+    // SWAPPED: Swipe RIGHT = Previous article
+    onSwipeRight: () => {
       if (currentIndex > 0) {
         currentIndex--;
       } else {
         currentIndex = contentNews.length - 1;
       }
-      renderCard(currentIndex, "left"); // Pass direction
-      showSwipeFeedback("previous");
+      renderCard(currentIndex, "left");
+      // Removed showSwipeFeedback
     },
 
     onSwipeUp: () => {
-      // Open full article overlay
       openArticleOverlay(currentIndex);
     },
 
-    onTap: () => {
-      // Optional: Do nothing, or open overlay on tap too
-      // openArticleOverlay(currentIndex);
-    },
+    onTap: () => {},
   });
 }
 
 function showSwipeHint() {
-  // Check if user has seen the hint before
   if (localStorage.getItem("swipeHintShown")) return;
 
   const hint = document.createElement("div");
   hint.className = "swipe-hint";
   hint.innerHTML = `
-    <i class="ph ph-hand-swipe-right"></i>
-    <span>Swipe to navigate • Swipe up to read full</span>
+    <i class="ph ph-hand-swipe-left"></i>
+    <span>Swipe left for next • Swipe up to read</span>
   `;
 
   document.getElementById("view-feed").appendChild(hint);
 
-  // Remove after 5 seconds or on first swipe
   const removeHint = () => {
     hint.style.opacity = "0";
     setTimeout(() => hint.remove(), 300);
@@ -1636,33 +1640,9 @@ function showSwipeHint() {
 
   setTimeout(removeHint, 5000);
 
-  // Also remove on any touch
   document
     .getElementById("active-card")
     .addEventListener("touchstart", removeHint, { once: true });
-}
-
-// Show brief feedback after swipe
-function showSwipeFeedback(action) {
-  const feedback = document.createElement("div");
-  feedback.className = "swipe-feedback";
-
-  if (action === "next") {
-    feedback.innerHTML = '<i class="ph ph-arrow-right"></i>';
-  } else if (action === "previous") {
-    feedback.innerHTML = '<i class="ph ph-arrow-left"></i>';
-  }
-
-  document.getElementById("view-feed").appendChild(feedback);
-
-  requestAnimationFrame(() => {
-    feedback.classList.add("show");
-
-    setTimeout(() => {
-      feedback.classList.remove("show");
-      setTimeout(() => feedback.remove(), 200);
-    }, 400);
-  });
 }
 
 // --- Creates portal for smart tooltip ---
