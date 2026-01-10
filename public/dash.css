@@ -4528,7 +4528,7 @@ li {
 }
 
 /* =======================================================
-   ELEGANT & NEUTRAL GLOSSY SWIPE INDICATOR STYLES
+   ELEGANT BLACK GLASS SWIPE INDICATOR STYLES
    ======================================================= */
 
 .swipe-indicator {
@@ -4542,57 +4542,55 @@ li {
   z-index: 100;
 }
 
-/* Base Glass Style for the Indicator Box */
+/* Base "Smoky Black Glass" Style */
 .swipe-indicator .indicator-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
   padding: 20px 28px;
-  border-radius: 24px; /* Softer corners */
+  border-radius: 24px;
 
-  /* The Frosted Glass Effect */
-  background: rgba(255, 255, 255, 0.15);
+  /* The Smoky Black Glass Effect */
+  background: rgba(25, 25, 30, 0.3); /* A very dark, slightly blue-ish grey */
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 
-  /* The Subtle Glowing Edge (created with a gradient border) */
+  /* A very faint, sharp white edge for definition */
   border: 1px solid transparent;
   background-clip: padding-box, border-box;
   background-origin: padding-box, border-box;
   background-image: linear-gradient(
       to right,
-      rgba(255, 255, 255, 0.15),
-      rgba(255, 255, 255, 0.15)
+      rgba(25, 25, 30, 0.3),
+      rgba(25, 25, 30, 0.3)
     ),
     /* The fill */
       linear-gradient(
         135deg,
-        rgba(255, 255, 255, 0.4),
-        rgba(255, 255, 255, 0.1)
+        rgba(255, 255, 255, 0.15),
+        rgba(255, 255, 255, 0.05)
       ); /* The border */
 
-  /* The Soft, Deep Shadow */
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  /* Standard dark shadow for depth */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 
-  /* Text & Icon Styling for Readability */
-  color: black;
+  /* Text & Icon Styling */
+  color: #ffffff;
   font-weight: 600;
   font-size: 14px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); /* A stronger shadow for readability on glass */
 
-  /* Smooth transitions for all properties */
   transition: all 0.2s ease-in-out;
 }
 
 .swipe-indicator .indicator-content i {
   font-size: 32px;
-  /* A very faint glow for the icon initially */
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8); /* Icon is slightly transparent initially */
+  transition: color 0.2s ease-in-out, text-shadow 0.2s ease-in-out;
 }
 
 /* --- Positioning --- */
-
 .swipe-indicator-left {
   left: 20px;
 }
@@ -4606,7 +4604,6 @@ li {
 }
 
 /* --- Active State (when swiping) --- */
-
 .swipe-indicator.active {
   transform: translateY(-50%) scale(1);
   opacity: 1;
@@ -4616,32 +4613,31 @@ li {
 }
 
 /* --- Triggered State (when swipe threshold is met) --- */
-/* This is where the magic happens! */
+/* This is where the glass "lights up" */
 
 .swipe-indicator.triggered .indicator-content {
   /* Pop effect */
   transform: scale(1.05);
 
-  /* Brighter, "lit up" glass fill */
-  background-color: rgba(255, 255, 255, 0.25);
+  /* Make the glass slightly more solid */
+  background-color: rgba(35, 35, 40, 0.5);
 
-  /* The border becomes pure, bright white */
+  /* A brighter, crisper white edge when triggered */
   background-image: linear-gradient(
       to right,
-      rgba(255, 255, 255, 0.25),
-      rgba(255, 255, 255, 0.25)
+      rgba(35, 35, 40, 0.5),
+      rgba(35, 35, 40, 0.5)
     ),
-    linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.3));
+    linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.2));
 
-  /* The shadow becomes a soft white "bloom" effect */
-  box-shadow: 0 0 50px rgba(255, 255, 255, 0.2),
-    0 0 20px rgba(255, 255, 255, 0.15);
+  /* The shadow becomes a subtle white "bloom" effect */
+  box-shadow: 0 0 50px rgba(255, 255, 255, 0.1), 0 0 20px rgba(0, 0, 0, 0.2);
 }
 
 .swipe-indicator.triggered .indicator-content i {
-  /* Make the icon shine brightly */
-  color: black;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 8px rgba(255, 255, 255, 1);
+  /* Make the icon shine pure white */
+  color: #fff;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
 }
 
 /* ==========================================
