@@ -627,8 +627,10 @@ async function loadDashboard() {
             await fetch("/api/refresh/logout", {
               credentials: "include",
             });
+            localStorage.clear();
             window.location.href = "/log-in";
           } catch (error) {
+            localStorage.clear();
             window.location.href = "/log-in";
           }
         });
@@ -791,9 +793,10 @@ async function loadDashboard() {
                   credentials: "include",
                 });
               } else {
-                await fetch("/logout");
+                await fetch("/api/refresh/logout");
                 showToast("info", "Session Expired", "Please log in again.");
                 setTimeout(() => {
+                  localStorage.clear();
                   window.location.href = "/log-in";
                 }, 1000);
                 throw new Error();
@@ -859,7 +862,12 @@ async function loadDashboard() {
       // Getting where the user stopped last time
       renderCard(parseInt(nowCardIndex, 10));
     }
+    if (contentNews.length > 0) {
+      initSwipeCard();
+      showSwipeHint();
+    }
   } catch (e) {
+    localStorage.clear();
     document.getElementById("back-link").style.display = "flex";
   }
 }
@@ -1038,7 +1046,7 @@ function navigateOverlay(direction) {
 
     setTimeout(() => {
       updateOverlayContent(currentIndex);
-      renderCard(currentIndex);
+      renderCard(currentIndex, direction === 1 ? "right" : "left");
       docBody.style.opacity = 1;
       docBody.style.transform = "translateX(0)";
     }, 150);
@@ -1074,8 +1082,8 @@ function navigateOverlay(direction) {
 }
 
 // --- Updates info per an individual main news card ---
-function renderCard(index, option) {
-  // If option is passed, counter display changes a bit
+function renderCard(index, direction = "right") {
+  // Changed 'option' to 'direction' with default value
   const article = contentNews[index];
   currentArticleId = article._id;
   currentArticleLink = article.link;
@@ -1083,6 +1091,26 @@ function renderCard(index, option) {
   localStorage.setItem("currentArticleId", currentArticleId);
   localStorage.setItem("currentIndex", index);
   const card = document.getElementById("active-card");
+
+  // Remove previous animation classes
+  card.classList.remove("enter-from-right", "enter-from-left");
+
+  // Reset transform and opacity immediately (no animation)
+  card.style.transition = "none";
+  card.style.transform = "";
+  card.style.opacity = "1";
+
+  // Force reflow
+  void card.offsetHeight;
+
+  // Re-enable transitions
+  card.style.transition = "";
+
+  // Add enter animation based on direction
+  card.classList.add(
+    direction === "right" ? "enter-from-right" : "enter-from-left"
+  );
+
   const cardAuthor = document.getElementById("card-author");
 
   if (localStorage.getItem(currentArticleId)) {
@@ -1104,7 +1132,7 @@ function renderCard(index, option) {
       const authorInfo = article.author
         .split(" ")
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" "); // capitalize first letter and join words back into a complete thing
+        .join(" ");
       cardAuthor.classList.remove("hide");
       document.getElementById("author-tag").innerText = authorInfo;
     } else cardAuthor.classList.add("hide");
@@ -1112,89 +1140,529 @@ function renderCard(index, option) {
     cardAuthor.classList.add("hide");
   }
 
-  card.style.opacity = 0;
-  card.style.transform = "translateX(10px)";
+  // Update content immediately (animation is handled by CSS class)
+  document.getElementById(
+    "news-image"
+  ).style.backgroundImage = `url('${article.imageLink}')`;
+  document.getElementById("news-tag").innerText = article.tag;
+  document.getElementById("news-title").innerText = article.title;
+  document.getElementById("news-body").innerHTML = `
+    <ul class="bullet-list">
+      ${article.bulletSummaryAI
+        .map(
+          (item) => `
+          <li class="bullet-item">
+            <div class="bullet-icon">
+              <i class="ph ph-square-logo"></i>
+            </div>
+            <span class="bullet-text">${item}</span>
+          </li>
+        `
+        )
+        .join(" ")}
+    </ul>
+  `;
 
-  setTimeout(() => {
-    document.getElementById(
-      "news-image"
-    ).style.backgroundImage = `url('${article.imageLink}')`;
-    document.getElementById("news-tag").innerText = article.tag;
-    document.getElementById("news-title").innerText = article.title;
-    document.getElementById("news-body").innerHTML = `
-                        <ul class="bullet-list">
-                          ${article.bulletSummaryAI
-                            .map(
-                              (item) => `
-                              <li class="bullet-item">
-                                <div class="bullet-icon">
-                                  <i class="ph ph-square-logo"></i>
-                                </div>
-                                <span class="bullet-text">${item}</span>
-                              </li>
-                            `
-                            )
-                            .join(" ")}
-                        </ul>
-                      `;
+  if (!article.publisher) {
+    mainPub.classList.add("hide");
+  }
 
-    if (!article.publisher) {
-      mainPub.classList.add("hide");
+  document.getElementById("news-source").innerText = article.publisher;
+
+  // Calculate how long ago was created
+  const parsedDate = new Date(article.date?.replace(" ", "T") || Date.now());
+  const diffHours = (Date.now() - parsedDate) / (1000 * 60 * 60);
+  const timeAgo =
+    diffHours > 24
+      ? `${Math.round(diffHours / 24)} days ago`
+      : `${Math.round(diffHours)} hours ago`;
+  document.getElementById("news-date").innerText = timeAgo;
+  document.getElementById("overlay-date").innerText = timeAgo;
+
+  // Update rating/score badges
+  if (article.biasScoreAI) {
+    colorScoreElement(
+      document.getElementById("news-bias-score"),
+      article.biasScoreAI,
+      false
+    );
+    colorScoreElement(
+      document.getElementById("news-quality-score"),
+      article.qualityScoreAI,
+      true
+    );
+  } else {
+    document.getElementById("news-bias-score").innerHTML = "In paid plans";
+    document.getElementById("news-quality-score").innerHTML = "In paid plans";
+  }
+  document.getElementById("bias-bar").style.width = `${
+    article.biasScoreAI * 10
+  }%`;
+  document.getElementById("quality-bar").style.width = `${
+    article.qualityScoreAI * 10
+  }%`;
+
+  // Update counter
+  document.getElementById("counter").innerText = `${index + 1} / ${
+    contentNews.length
+  }`;
+
+  // Reset reaction buttons when changing cards
+  resetReactionButtons();
+}
+
+// ==========================================
+// SWIPE CARD CONTROLLER
+// ==========================================
+
+class SwipeCard {
+  constructor(cardElement, options = {}) {
+    this.card = cardElement;
+    this.options = {
+      swipeThreshold: 100, // px needed to trigger action
+      rotationMultiplier: 0.1, // how much card rotates while swiping
+      velocityThreshold: 0.5, // speed threshold for quick flicks
+      ...options,
+    };
+
+    // State
+    this.startX = 0;
+    this.startY = 0;
+    this.currentX = 0;
+    this.currentY = 0;
+    this.startTime = 0;
+    this.isDragging = false;
+
+    // Callbacks
+    this.onSwipeRight = options.onSwipeRight || (() => {});
+    this.onSwipeLeft = options.onSwipeLeft || (() => {});
+    this.onSwipeUp = options.onSwipeUp || (() => {});
+    this.onTap = options.onTap || (() => {});
+
+    // Elements
+    this.indicators = this.createIndicators();
+
+    // Bind events
+    this.bindEvents();
+  }
+
+  createIndicators() {
+    // Create swipe action indicators
+    const indicatorLeft = document.createElement("div");
+    indicatorLeft.className = "swipe-indicator swipe-indicator-left";
+    indicatorLeft.innerHTML = `
+      <div class="indicator-content">
+        <i class="ph ph-arrow-left"></i>
+        <span>Previous</span>
+      </div>
+    `;
+
+    const indicatorRight = document.createElement("div");
+    indicatorRight.className = "swipe-indicator swipe-indicator-right";
+    indicatorRight.innerHTML = `
+      <div class="indicator-content">
+        <i class="ph ph-arrow-right"></i>
+        <span>Next</span>
+      </div>
+    `;
+
+    const indicatorUp = document.createElement("div");
+    indicatorUp.className = "swipe-indicator swipe-indicator-up";
+    indicatorUp.innerHTML = `
+      <div class="indicator-content">
+        <i class="ph ph-article"></i>
+        <span>Read Full</span>
+      </div>
+    `;
+
+    // Add to card's parent container
+    const container = this.card.parentElement;
+    container.style.position = "relative";
+    container.appendChild(indicatorLeft);
+    container.appendChild(indicatorRight);
+    container.appendChild(indicatorUp);
+
+    return { left: indicatorLeft, right: indicatorRight, up: indicatorUp };
+  }
+
+  bindEvents() {
+    // Touch events
+    this.card.addEventListener("touchstart", this.handleStart.bind(this), {
+      passive: true,
+    });
+    this.card.addEventListener("touchmove", this.handleMove.bind(this), {
+      passive: false,
+    });
+    this.card.addEventListener("touchend", this.handleEnd.bind(this));
+    this.card.addEventListener("touchcancel", this.handleCancel.bind(this));
+
+    // Mouse events (for desktop testing)
+    this.card.addEventListener("mousedown", this.handleStart.bind(this));
+    document.addEventListener("mousemove", this.handleMove.bind(this));
+    document.addEventListener("mouseup", this.handleEnd.bind(this));
+
+    // Prevent context menu on long press
+    this.card.addEventListener("contextmenu", (e) => e.preventDefault());
+  }
+
+  getEventPoint(e) {
+    if (e.touches && e.touches.length > 0) {
+      return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+    return { x: e.clientX, y: e.clientY };
+  }
+
+  handleStart(e) {
+    // Ignore if clicking on buttons or links
+    if (e.target.closest("button, a, .save-btn, .score-info-btn")) return;
+
+    const point = this.getEventPoint(e);
+
+    this.isDragging = true;
+    this.startX = point.x;
+    this.startY = point.y;
+    this.currentX = point.x;
+    this.currentY = point.y;
+    this.startTime = Date.now();
+
+    this.card.style.transition = "none";
+    this.card.classList.add("dragging");
+  }
+
+  handleMove(e) {
+    if (!this.isDragging) return;
+
+    const point = this.getEventPoint(e);
+    this.currentX = point.x;
+    this.currentY = point.y;
+
+    const deltaX = this.currentX - this.startX;
+    const deltaY = this.currentY - this.startY;
+
+    // Determine primary direction
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+
+    // Only prevent default if we're actually swiping
+    if (absX > 10 || absY > 10) {
+      e.preventDefault?.();
     }
 
-    document.getElementById("news-source").innerText = article.publisher;
+    // Calculate visual transforms
+    let translateX = deltaX;
+    let translateY = 0;
+    let rotation = deltaX * this.options.rotationMultiplier;
 
-    // Calculate how long ago was created
-    const parsedDate = new Date(article.date?.replace(" ", "T") || Date.now());
-    const diffHours = (Date.now() - parsedDate) / (1000 * 60 * 60);
-    const timeAgo =
-      diffHours > 24
-        ? `${Math.round(diffHours / 24)} days ago`
-        : `${Math.round(diffHours)} hours ago`;
-    document.getElementById("news-date").innerText = timeAgo;
-    document.getElementById("overlay-date").innerText = timeAgo;
+    // If swiping up more than horizontally, prioritize up
+    if (absY > absX && deltaY < 0) {
+      translateY = deltaY * 0.5; // Dampen vertical movement
+      translateX = deltaX * 0.3; // Reduce horizontal when swiping up
+      rotation = 0;
+    }
 
-    // Update rating/score badges (and color first number)
-    // Update overlay scores (and color first number)
-    if (article.biasScoreAI) {
-      colorScoreElement(
-        document.getElementById("news-bias-score"),
-        article.biasScoreAI,
-        false
-      );
-      colorScoreElement(
-        document.getElementById("news-quality-score"),
-        article.qualityScoreAI,
-        true
-      );
+    // Apply transforms
+    this.card.style.transform = `translateX(${translateX}px) translateY(${translateY}px) rotate(${rotation}deg)`;
+
+    // Update indicators
+    this.updateIndicators(deltaX, deltaY);
+  }
+
+  updateIndicators(deltaX, deltaY) {
+    const threshold = this.options.swipeThreshold;
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+
+    // Reset all indicators
+    Object.values(this.indicators).forEach((ind) => {
+      ind.classList.remove("active", "triggered");
+    });
+
+    // Determine which indicator to show
+    if (absY > absX && deltaY < -30) {
+      // Swiping up
+      const progress = Math.min(absY / threshold, 1);
+      this.indicators.up.classList.add("active");
+      this.indicators.up.style.opacity = progress;
+
+      if (absY > threshold) {
+        this.indicators.up.classList.add("triggered");
+        this.triggerHaptic("light");
+      }
+    } else if (deltaX > 30) {
+      // Swiping right (next)
+      const progress = Math.min(absX / threshold, 1);
+      this.indicators.right.classList.add("active");
+      this.indicators.right.style.opacity = progress;
+
+      if (absX > threshold) {
+        this.indicators.right.classList.add("triggered");
+        this.triggerHaptic("light");
+      }
+    } else if (deltaX < -30) {
+      // Swiping left (previous)
+      const progress = Math.min(absX / threshold, 1);
+      this.indicators.left.classList.add("active");
+      this.indicators.left.style.opacity = progress;
+
+      if (absX > threshold) {
+        this.indicators.left.classList.add("triggered");
+        this.triggerHaptic("light");
+      }
+    }
+  }
+
+  handleEnd(e) {
+    if (!this.isDragging) return;
+
+    this.isDragging = false;
+    this.card.classList.remove("dragging");
+
+    const deltaX = this.currentX - this.startX;
+    const deltaY = this.currentY - this.startY;
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+
+    // Calculate velocity for flick detection
+    const elapsed = Date.now() - this.startTime;
+    const velocityX = absX / elapsed;
+    const velocityY = absY / elapsed;
+
+    // Check for tap (minimal movement)
+    if (absX < 10 && absY < 10 && elapsed < 200) {
+      this.resetCard();
+      this.onTap();
+      return;
+    }
+
+    // Determine action based on threshold or velocity
+    const threshold = this.options.swipeThreshold;
+    const velocityThreshold = this.options.velocityThreshold;
+
+    // Swipe up (open overlay)
+    if (
+      (absY > threshold || velocityY > velocityThreshold) &&
+      deltaY < 0 &&
+      absY > absX
+    ) {
+      this.animateSwipeUp();
+      this.triggerHaptic("medium");
+      setTimeout(() => {
+        this.onSwipeUp();
+        this.resetCard(false);
+      }, 200);
+      return;
+    }
+
+    // Swipe right (next article)
+    if ((absX > threshold || velocityX > velocityThreshold) && deltaX > 0) {
+      this.animateSwipeOff("right");
+      this.triggerHaptic("medium");
+      setTimeout(() => {
+        this.onSwipeRight();
+        this.resetCard(false);
+      }, 250);
+      return;
+    }
+
+    // Swipe left (previous article)
+    if ((absX > threshold || velocityX > velocityThreshold) && deltaX < 0) {
+      this.animateSwipeOff("left");
+      this.triggerHaptic("medium");
+      setTimeout(() => {
+        this.onSwipeLeft();
+        this.resetCard(false);
+      }, 250);
+      return;
+    }
+
+    // Not enough movement - snap back
+    this.resetCard();
+  }
+
+  handleCancel() {
+    this.isDragging = false;
+    this.card.classList.remove("dragging");
+    this.resetCard();
+  }
+
+  animateSwipeOff(direction) {
+    const offscreenX =
+      direction === "right" ? window.innerWidth : -window.innerWidth;
+    const rotation = direction === "right" ? 20 : -20;
+
+    this.card.style.transition =
+      "transform 0.25s ease-out, opacity 0.25s ease-out";
+    this.card.style.transform = `translateX(${offscreenX}px) rotate(${rotation}deg)`;
+    this.card.style.opacity = "0";
+
+    // Hide indicators
+    Object.values(this.indicators).forEach((ind) => {
+      ind.classList.remove("active", "triggered");
+      ind.style.opacity = "0";
+    });
+  }
+
+  animateSwipeUp() {
+    this.card.style.transition =
+      "transform 0.2s ease-out, opacity 0.2s ease-out";
+    this.card.style.transform = "translateY(-100px) scale(0.95)";
+    this.card.style.opacity = "0.5";
+
+    // Hide indicators
+    Object.values(this.indicators).forEach((ind) => {
+      ind.classList.remove("active", "triggered");
+      ind.style.opacity = "0";
+    });
+  }
+
+  resetCard(animate = true) {
+    if (animate) {
+      this.card.style.transition =
+        "transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease";
     } else {
-      document.getElementById("news-bias-score").innerHTML = "In paid plans";
-      document.getElementById("news-quality-score").innerHTML = "In paid plans";
-    }
-    document.getElementById("bias-bar").style.width = `${
-      article.biasScoreAI * 10
-    }%`;
-    document.getElementById("quality-bar").style.width = `${
-      article.qualityScoreAI * 10
-    }%`;
-
-    if (option) {
-      document.getElementById(
-        "counter"
-      ).innerText = `${index} / ${contentNews.length}`;
-    } else {
-      index++;
-      document.getElementById(
-        "counter"
-      ).innerText = `${index} / ${contentNews.length}`;
+      this.card.style.transition = "none";
     }
 
-    // Reset reaction buttons when changing cards
-    resetReactionButtons();
+    this.card.style.transform = "";
+    this.card.style.opacity = "1";
 
-    card.style.opacity = 1;
-    card.style.transform = "translateX(0)";
-  }, 200);
+    // Reset indicators
+    Object.values(this.indicators).forEach((ind) => {
+      ind.classList.remove("active", "triggered");
+      ind.style.opacity = "0";
+    });
+
+    // Re-enable transitions after reset
+    if (!animate) {
+      requestAnimationFrame(() => {
+        this.card.style.transition = "";
+      });
+    }
+  }
+
+  triggerHaptic(type = "light") {
+    if (navigator.vibrate) {
+      const patterns = {
+        light: [5],
+        medium: [15],
+        heavy: [30],
+      };
+      navigator.vibrate(patterns[type] || patterns.light);
+    }
+  }
+
+  // Clean up
+  destroy() {
+    this.card.removeEventListener("touchstart", this.handleStart);
+    this.card.removeEventListener("touchmove", this.handleMove);
+    this.card.removeEventListener("touchend", this.handleEnd);
+    this.card.removeEventListener("touchcancel", this.handleCancel);
+    this.card.removeEventListener("mousedown", this.handleStart);
+    document.removeEventListener("mousemove", this.handleMove);
+    document.removeEventListener("mouseup", this.handleEnd);
+
+    Object.values(this.indicators).forEach((ind) => ind.remove());
+  }
+}
+
+// ==========================================
+// INITIALIZE SWIPE ON YOUR CARD
+// ==========================================
+
+let swipeController = null;
+
+function initSwipeCard() {
+  const card = document.getElementById("active-card");
+
+  // Destroy previous instance if exists
+  if (swipeController) {
+    swipeController.destroy();
+  }
+
+  swipeController = new SwipeCard(card, {
+    swipeThreshold: 80,
+
+    onSwipeRight: () => {
+      if (currentIndex < contentNews.length - 1) {
+        currentIndex++;
+      } else {
+        currentIndex = 0;
+      }
+      renderCard(currentIndex, "right"); // Pass direction
+      showSwipeFeedback("next");
+    },
+
+    onSwipeLeft: () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+      } else {
+        currentIndex = contentNews.length - 1;
+      }
+      renderCard(currentIndex, "left"); // Pass direction
+      showSwipeFeedback("previous");
+    },
+
+    onSwipeUp: () => {
+      // Open full article overlay
+      openArticleOverlay(currentIndex);
+    },
+
+    onTap: () => {
+      // Optional: Do nothing, or open overlay on tap too
+      // openArticleOverlay(currentIndex);
+    },
+  });
+}
+
+function showSwipeHint() {
+  // Check if user has seen the hint before
+  if (localStorage.getItem("swipeHintShown")) return;
+
+  const hint = document.createElement("div");
+  hint.className = "swipe-hint";
+  hint.innerHTML = `
+    <i class="ph ph-hand-swipe-right"></i>
+    <span>Swipe to navigate • Swipe up to read full</span>
+  `;
+
+  document.getElementById("view-feed").appendChild(hint);
+
+  // Remove after 5 seconds or on first swipe
+  const removeHint = () => {
+    hint.style.opacity = "0";
+    setTimeout(() => hint.remove(), 300);
+    localStorage.setItem("swipeHintShown", "true");
+  };
+
+  setTimeout(removeHint, 5000);
+
+  // Also remove on any touch
+  document
+    .getElementById("active-card")
+    .addEventListener("touchstart", removeHint, { once: true });
+}
+
+// Show brief feedback after swipe
+function showSwipeFeedback(action) {
+  const feedback = document.createElement("div");
+  feedback.className = "swipe-feedback";
+
+  if (action === "next") {
+    feedback.innerHTML = '<i class="ph ph-arrow-right"></i>';
+  } else if (action === "previous") {
+    feedback.innerHTML = '<i class="ph ph-arrow-left"></i>';
+  }
+
+  document.getElementById("view-feed").appendChild(feedback);
+
+  requestAnimationFrame(() => {
+    feedback.classList.add("show");
+
+    setTimeout(() => {
+      feedback.classList.remove("show");
+      setTimeout(() => feedback.remove(), 200);
+    }, 400);
+  });
 }
 
 // --- Creates portal for smart tooltip ---
@@ -3161,7 +3629,7 @@ document.addEventListener("keydown", (e) => {
       } else {
         currentIndex = 0;
       }
-      renderCard(currentIndex);
+      renderCard(currentIndex, "right"); // ← Pass direction
       document.getElementById("news-body").scrollTop = 0;
     }
   }
@@ -3175,7 +3643,7 @@ document.addEventListener("keydown", (e) => {
       } else {
         currentIndex = contentNews.length - 1;
       }
-      renderCard(currentIndex);
+      renderCard(currentIndex, "left"); // ← Pass direction
       document.getElementById("news-body").scrollTop = 0;
     }
   }
@@ -3191,7 +3659,10 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
   const logOutReq = await fetch("/api/refresh/logout", {
     credentials: "include",
   });
-  if (logOutReq.status === 200) window.location.href = "/log-in";
+  if (logOutReq.status === 200) {
+    localStorage.clear();
+    window.location.href = "/log-in";
+  }
 });
 
 // --- Article data global storage ---
@@ -3263,7 +3734,7 @@ document.getElementById("nextBtn").addEventListener("click", () => {
   } else {
     currentIndex = 0;
   }
-  renderCard(currentIndex);
+  renderCard(currentIndex, "right"); // ← Pass direction
 });
 
 document.getElementById("prevBtn").addEventListener("click", () => {
@@ -3272,7 +3743,7 @@ document.getElementById("prevBtn").addEventListener("click", () => {
   } else {
     currentIndex = contentNews.length - 1;
   }
-  renderCard(currentIndex);
+  renderCard(currentIndex, "left"); // ← Pass direction
 });
 
 // --- Portal tooltip setup ---
@@ -3301,6 +3772,13 @@ const tooltipData = {
 
 // --- Initialization ---
 loadDashboard();
+// Swiping
+loadDashboard().then(() => {
+  if (contentNews.length > 0) {
+    initSwipeCard();
+    showSwipeHint();
+  }
+});
 checkScreenSize();
 initTooltips();
 // Initialize billing

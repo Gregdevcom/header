@@ -4504,6 +4504,295 @@ li {
   overflow-y: auto;
 }
 
+/* ==========================================
+   SWIPE CARD STYLES
+   ========================================== */
+
+/* Make card swipeable */
+#active-card {
+  touch-action: pan-y pinch-zoom;
+  user-select: none;
+  cursor: grab;
+  will-change: transform;
+  transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+}
+
+#active-card.dragging {
+  cursor: grabbing;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+/* Card container needs relative positioning */
+#view-feed {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ==========================================
+   SWIPE INDICATORS
+   ========================================== */
+
+.swipe-indicator {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 100;
+}
+
+.swipe-indicator .indicator-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 24px;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.swipe-indicator i {
+  font-size: 28px;
+}
+
+/* Left indicator (Previous) */
+.swipe-indicator-left {
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-20px);
+}
+
+.swipe-indicator-left.active {
+  transform: translateY(-50%) translateX(0);
+}
+
+.swipe-indicator-left .indicator-content {
+  background: rgba(99, 102, 241, 0.9);
+  color: white;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+}
+
+/* Right indicator (Next) */
+.swipe-indicator-right {
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%) translateX(20px);
+}
+
+.swipe-indicator-right.active {
+  transform: translateY(-50%) translateX(0);
+}
+
+.swipe-indicator-right .indicator-content {
+  background: rgba(16, 185, 129, 0.9);
+  color: white;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* Up indicator (Read Full) */
+.swipe-indicator-up {
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+}
+
+.swipe-indicator-up.active {
+  transform: translateX(-50%) translateY(0);
+}
+
+.swipe-indicator-up .indicator-content {
+  background: rgba(245, 158, 11, 0.9);
+  color: white;
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+}
+
+/* Triggered state - when threshold is reached */
+.swipe-indicator.triggered .indicator-content {
+  transform: scale(1.1);
+}
+
+.swipe-indicator-left.triggered .indicator-content {
+  background: rgba(79, 70, 229, 1);
+}
+
+.swipe-indicator-right.triggered .indicator-content {
+  background: rgba(5, 150, 105, 1);
+}
+
+.swipe-indicator-up.triggered .indicator-content {
+  background: rgba(217, 119, 6, 1);
+}
+
+/* ==========================================
+   SWIPE FEEDBACK ANIMATION
+   ========================================== */
+
+.swipe-feedback {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1000;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.swipe-feedback i {
+  font-size: 32px;
+  color: white;
+}
+
+.swipe-feedback.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ==========================================
+   SWIPE HINT (First-time users)
+   ========================================== */
+
+.swipe-hint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 30px;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 50;
+  animation: swipeHintPulse 2s ease-in-out infinite;
+}
+
+.swipe-hint i {
+  font-size: 18px;
+}
+
+@keyframes swipeHintPulse {
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.02);
+  }
+}
+
+/* Hand animation for hint */
+.swipe-hint::after {
+  content: "👆";
+  animation: swipeHintHand 1.5s ease-in-out infinite;
+  display: inline-block;
+  margin-left: 8px;
+}
+
+@keyframes swipeHintHand {
+  0%,
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(10px) translateY(-5px);
+  }
+  75% {
+    transform: translateX(-10px) translateY(-5px);
+  }
+}
+
+/* ==========================================
+   CARD ENTER ANIMATION
+   ========================================== */
+
+@keyframes cardEnterFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px) rotate(5deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) rotate(0);
+  }
+}
+
+@keyframes cardEnterFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100px) rotate(-5deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) rotate(0);
+  }
+}
+
+#active-card.enter-from-right {
+  animation: cardEnterFromRight 0.3s ease-out forwards;
+}
+
+#active-card.enter-from-left {
+  animation: cardEnterFromLeft 0.3s ease-out forwards;
+}
+
+/* ==========================================
+   MOBILE OPTIMIZATIONS
+   ========================================== */
+
+@media (max-width: 768px) {
+  .swipe-indicator-left,
+  .swipe-indicator-right {
+    top: auto;
+    bottom: 100px;
+  }
+
+  .swipe-indicator-left {
+    left: 10px;
+  }
+
+  .swipe-indicator-right {
+    right: 10px;
+  }
+
+  .swipe-indicator .indicator-content {
+    padding: 12px 18px;
+    font-size: 12px;
+  }
+
+  .swipe-indicator i {
+    font-size: 24px;
+  }
+}
+
+/* ==========================================
+   REDUCED MOTION
+   ========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  #active-card,
+  .swipe-indicator,
+  .swipe-feedback {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
 @keyframes deletionSlideIn {
   from {
     opacity: 0;
