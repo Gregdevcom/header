@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Feed | Header</title>
+    <link rel="icon" href="HeaDer.png" type="image/x-icon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="dash.css" />
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="dash.js" defer></script>
+  </head>
+  <body>
+    <div id="loader" class="loading-container">
+      <div class="loader-spinner"></div>
+    </div>
+
+    <!-- FULL ARTICLE OVERLAY -->
+    <div class="article-overlay" id="article-overlay">
+      <!-- Navigation Arrows -->
+      <button class="overlay-nav-btn prev" id="overlay-prev-btn">
+        <i class="ph ph-arrow-left"></i>
+      </button>
+      <button class="overlay-nav-btn next" id="overlay-next-btn">
+        <i class="ph ph-arrow-right"></i>
+      </button>
+
+      <!-- Counter -->
+
+      <div class="article-document">
+        <div class="article-doc-header">
+          <div class="article-doc-header-left">
+            <div>
+              <div class="article-doc-title-small" id="overlay-title-small">
+                Article Title
+              </div>
+              <div class="article-doc-subtitle">Full Article View</div>
+            </div>
+          </div>
+          <div class="article-doc-header-right">
+            <div class="reaction-group">
+              <button class="reaction-btn save-btn" title="Save for later">
+                <i class="ph ph-star"></i>
+              </button>
+            </div>
+            <div id="resetViewBtn" class="resetViewBtn">
+              <i class="ph ph-arrow-line-up"></i>
+            </div>
+            <div class="overlay-counter" id="overlay-counter">Counter</div>
+            <button class="close-article-btn" id="close-article-btn">
+              <i class="ph ph-x"></i>
+            </button>
+          </div>
+        </div>
+        <div class="article-doc-body" id="article-doc-body">
+          <div class="article-doc-image" id="overlay-image"></div>
+          <!-- OVERLAY SCORE BADGES -->
+          <div class="overlay-score-badges">
+            <div class="overlay-score-badge">
+              <div class="overlay-score-icon bias">
+                <i class="ph ph-scales"></i>
+              </div>
+              <div class="overlay-score-content">
+                <span class="overlay-score-label">Bias Score</span>
+                <span class="overlay-score-value bias" id="overlay-bias-score"
+                  >?/10</span
+                >
+              </div>
+              <button
+                class="overlay-score-info-btn"
+                aria-label="Bias score info"
+              >
+                <i class="ph ph-info"></i>
+              </button>
+            </div>
+
+            <div class="overlay-score-badge">
+              <div class="overlay-score-icon quality">
+                <i class="ph ph-seal-check"></i>
+              </div>
+              <div class="overlay-score-content">
+                <span class="overlay-score-label">Quality Score</span>
+                <span
+                  class="overlay-score-value quality"
+                  id="overlay-quality-score"
+                  >?/10</span
+                >
+              </div>
+              <button
+                class="overlay-score-info-btn"
+                aria-label="Quality score info"
+              >
+                <i class="ph ph-info"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="article-doc-meta">
+            <span class="article-doc-tag" id="overlay-tag">TAG</span>
+            <span
+              class="article-doc-source-badge"
+              id="article-doc-source-badge"
+            >
+              <i class="ph ph-globe"></i>
+              <span id="overlay-source">Source</span>
+            </span>
+            <span class="article-doc-date-badge">
+              <i class="ph ph-calendar"></i>
+              <span id="overlay-date">Date</span>
+            </span>
+          </div>
+
+          <h1 class="article-doc-main-title" id="overlay-title">
+            Article Title
+          </h1>
+          <div class="overlay-author-byline" id="overlay-author-byline">
+            <i class="ph ph-user-circle"></i>
+            <span>By <span id="author-tag-overlay">Author Name</span></span>
+          </div>
+
+          <!-- KEY POINTS SECTION -->
+          <div class="key-points-section">
+            <div class="key-points-header">
+              <div>
+                <div class="key-points-title">Key Points</div>
+                <div class="key-points-subtitle">Quick summary at a glance</div>
+              </div>
+            </div>
+            <ul class="key-points-list" id="overlay-bullet-summary">
+              <!-- Bullet points will be inserted here -->
+            </ul>
+          </div>
+
+          <div class="article-doc-section">
+            <div class="article-doc-section-title">
+              <i class="ph ph-text-align-left"></i> Summary
+            </div>
+            <div class="article-doc-section-content" id="overlay-summary">
+              Summary content goes here...
+            </div>
+          </div>
+
+          <div class="article-doc-divider"></div>
+
+          <!--Content swap toggle (en--nl)-->
+          <div class="langContentGroup">
+            <div
+              class="settings-row accountGroup langContentGroupSmall"
+              id="langContentGroupSmall"
+            >
+              <div class="settings-row-left">
+                <i class="ph ph-translate"></i>
+                <span>Content language</span>
+              </div>
+
+              <div class="language-toggle" id="languageContentToggle">
+                <button
+                  class="lang-option active lang-option-content"
+                  data-lang="en"
+                >
+                  <span class="lang-code">EN</span>
+                </button>
+                <button class="lang-option lang-option-content" data-lang="nl">
+                  <span class="lang-code">NL</span>
+                </button>
+                <div class="lang-slider"></div>
+              </div>
+            </div>
+            <div class="article-doc-divider article-doc-divider-2"></div>
+          </div>
+
+          <div class="article-doc-section">
+            <div class="article-doc-section-title">
+              <i class="ph ph-article"></i> Full Content
+            </div>
+            <div class="article-doc-section-content" id="overlay-full-content">
+              Full article content goes here. This would contain the complete
+              text of the article with all the details, quotes, and information
+              that couldn't fit in the summary card view.
+            </div>
+          </div>
+
+          <div class="wordCountDisclaimer" id="wordCountDisclaimer">
+            <i class="ph ph-info infoIcon"></i>
+            This article's content was cut off at 1500 words. Visit the original
+            source for the full story.
+          </div>
+
+          <div class="article-doc-divider article-doc-divider-1"></div>
+
+          <div class="article-doc-section">
+            <a
+              href="#"
+              class="article-doc-url"
+              id="overlay-url"
+              target="_blank"
+            >
+              <i class="ph ph-arrow-square-out"></i>
+              Visit Original Article
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="app" style="display: none">
+      <!-- SIDEBAR -->
+      <aside class="sidebar" id="sidebar">
+        <div class="logo-spark">
+          Header<i class="ph-fill ph-sparkle"></i>
+          <button class="closeSide" id="closeSide">
+            <i class="ph ph-sidebar-simple"></i>
+          </button>
+        </div>
+
+        <ul class="nav-links">
+          <li class="nav-item active" data-target="view-feed">
+            <i class="ph ph-newspaper"></i> Feed
+          </li>
+          <li class="nav-item" data-target="view-favorites">
+            <i class="ph ph-folder-simple-star"></i> Saved
+          </li>
+          <li class="nav-item" data-target="view-trending">
+            <i class="ph ph-cloud-arrow-down"></i> Offline
+          </li>
+          <div class="article-doc-divider article-doc-divider-3"></div>
+          <li class="nav-item" data-target="view-billing">
+            <i class="ph ph-invoice"></i> Billing
+          </li>
+          <li class="nav-item" data-target="view-settings">
+            <i class="ph ph-gear"></i> Settings
+          </li>
+        </ul>
+      </aside>
+
+      <main class="main-content" id="main-content">
+        <!-- Email Verification Banner -->
+        <div class="verification-banner hidden" id="verification-banner">
+          <div class="verification-icon-wrapper" id="verification-icon-wrapper">
+            <i class="ph ph-envelope-simple"></i>
+          </div>
+          <div class="verification-content">
+            <div class="verification-title" id="verification-title">
+              Verify your email address
+            </div>
+            <div class="verification-message" id="verification-message">
+              Please check your inbox and click the verification link to unlock
+              all features.
+            </div>
+          </div>
+          <div class="verification-actions" id="verification-actions">
+            <button class="resend-btn" id="resend-verification-btn">
+              <i class="ph ph-paper-plane-tilt"></i>
+              Resend Email
+            </button>
+            <button
+              class="dismiss-banner-btn"
+              id="dismiss-banner-btn"
+              title="Dismiss"
+            >
+              <i class="ph ph-x"></i>
+            </button>
+          </div>
+        </div>
+        <!-- Top Bar Wrapper (includes top bar + verification banner + open sidebar) -->
+        <button class="openSide open-sidebar-btn" title="Open sidebar">
+          <i class="ph ph-sidebar-simple"></i>
+        </button>
+        <div class="top-bar-wrapper" id="top-bar-wrapper">
+          <div class="top-bar" id="top-bar">
+            <div class="user-welcome" id="welcome-msg">Welcome</div>
+            <div class="secret-badge" id="secret-msg">Loading...</div>
+          </div>
+        </div>
+
+        <!-- VIEW 1: FEED -->
+        <div id="view-feed" class="view-section stage-container">
+          <div class="card-stack-wrapper">
+            <div class="card-shadow-2"></div>
+            <div class="card-shadow-1"></div>
+
+            <div class="newspaper-card" id="active-card">
+              <!-- Image Section -->
+              <div class="card-image" id="news-image"></div>
+              <!-- SCORE BADGES -->
+              <div class="score-badges" id="score-badges">
+                <div class="score-badge">
+                  <div class="score-badge-icon bias">
+                    <i class="ph ph-scales"></i>
+                  </div>
+                  <span class="score-label">Bias</span>
+                  <span class="score-value bias" id="news-bias-score"
+                    >3/10</span
+                  >
+                  <div class="score-bar-container">
+                    <div class="score-bar">
+                      <div
+                        class="score-bar-fill bias"
+                        id="bias-bar"
+                        style="width: 30%"
+                      ></div>
+                    </div>
+                  </div>
+                  <button class="score-info-btn" aria-label="Bias score info">
+                    <i class="ph ph-info"></i>
+                  </button>
+                </div>
+
+                <div class="score-badge">
+                  <div class="score-badge-icon quality">
+                    <i class="ph ph-seal-check"></i>
+                  </div>
+                  <span class="score-label">Quality</span>
+                  <span class="score-value quality" id="news-quality-score"
+                    >8/10</span
+                  >
+                  <div class="score-bar-container">
+                    <div class="score-bar">
+                      <div
+                        class="score-bar-fill quality"
+                        id="quality-bar"
+                        style="width: 80%"
+                      ></div>
+                    </div>
+                  </div>
+                  <button
+                    class="score-info-btn"
+                    aria-label="Quality score info"
+                  >
+                    <i class="ph ph-info"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Content Section -->
+              <div class="card-content" id="card-content">
+                <div class="card-meta" id="card-meta">
+                  <div class="card-meta-left">
+                    <span class="card-tag" id="news-tag">LOADING</span>
+                    <span class="card-source" id="card-source">
+                      <i class="ph ph-globe"></i>
+                      <span id="news-source">Source</span>
+                    </span>
+                    <span class="card-author" id="card-author">
+                      <i class="ph ph-pen-nib"></i>
+                      <span id="author-tag">Author</span>
+                    </span>
+                  </div>
+                  <span class="card-date" id="news-date">Today</span>
+                </div>
+
+                <h1 class="card-title" id="news-title">Loading your feed...</h1>
+
+                <div class="card-body" id="news-body">
+                  <ul class="bullet-list">
+                    <!-- Bullet items will be inserted here -->
+                  </ul>
+                </div>
+
+                <p class="read-more" id="news-link">
+                  Read full summary & more <i class="ph ph-arrow-right"></i>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Controls -->
+          <div class="feed-controls" id="feed-controls">
+            <div class="reaction-group reactionThumbs">
+              <button
+                class="reaction-btn feedbackBtn"
+                id="feedbackBtn"
+                title="Feedback"
+              >
+                <i class="ph ph-seal-warning"></i>
+              </button>
+            </div>
+
+            <div class="controls-divider dividerThumbs"></div>
+
+            <div class="nav-group">
+              <button class="nav-btn" id="prevBtn" title="Previous">
+                <i class="ph ph-caret-left"></i>
+              </button>
+              <div class="counter" id="counter">1 / 5</div>
+              <button class="nav-btn" id="nextBtn" title="Next">
+                <i class="ph ph-caret-right"></i>
+              </button>
+            </div>
+
+            <div class="controls-divider"></div>
+
+            <div class="reaction-group">
+              <button class="reaction-btn save-btn" title="Save for later">
+                <i class="ph ph-star"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 2: FAVORITES -->
+        <div
+          id="view-favorites"
+          class="view-section sectionClasses"
+          style="display: none"
+        >
+          <div class="openBtnsDiv">
+            <h2>Saved Articles</h2>
+          </div>
+          <p style="color: var(--text-gray); margin-top: 10px">
+            Your starred articles will appear here.
+          </p>
+          <div id="favorites-grid" class="favorites-grid">
+            <!-- Cards will be injected here -->
+          </div>
+          <div id="empty-favorites" class="empty-state" style="display: none">
+            <i class="ph ph-folder-simple-star"></i>
+            <p>It's empty here</p>
+          </div>
+        </div>
+
+        <!-- VIEW 3: OFFLINE -->
+        <div
+          id="view-trending"
+          class="view-section sectionClasses"
+          style="display: none"
+        >
+          <div class="openBtnsDiv">
+            <h2>Offline Reading</h2>
+          </div>
+          <p style="color: var(--text-gray); margin-top: 10px">
+            Add articles you want to read offline here...
+          </p>
+          <div
+            id="empty-offline"
+            class="empty-state offlineEmpty"
+            style="display: none"
+          >
+            <i class="ph ph-cloud-arrow-down"></i>
+            <p>It's empty here</p>
+          </div>
+        </div>
+        <!-- VIEW 4: BILLING -->
+        <div
+          id="view-billing"
+          class="view-section sectionClasses"
+          style="display: none"
+        >
+          <h2 class="settings-title">Billing & Subscription</h2>
+
+          <div class="billing-page">
+            <!-- Current Plan Card -->
+            <div class="billing-card current-plan-card">
+              <div class="billing-card-header">
+                <div class="billing-card-title">Current Plan</div>
+              </div>
+
+              <div class="plan-display">
+                <div class="plan-name" id="billing-plan-name">Unavailable</div>
+                <div class="plan-badge" id="billing-plan-badge">
+                  <span id="billing-status-text">Unavailable</span>
+                </div>
+              </div>
+
+              <!-- Trial Banner (hidden by default) -->
+              <div class="trial-banner hidden" id="trial-banner">
+                <div class="trial-icon">
+                  <i class="ph ph-hourglass-medium"></i>
+                </div>
+                <div class="trial-content">
+                  <div class="trial-title">Trial Active</div>
+                  <div class="trial-message" id="trial-message">
+                    Your trial ends in
+                    <strong id="trial-days-left">Unavailable</strong>
+                    days
+                  </div>
+                </div>
+                <div class="trial-countdown" id="trial-countdown">
+                  <span class="countdown-number" id="countdown-days"
+                    >Unavailable</span
+                  >
+                  <span class="countdown-label">days left</span>
+                </div>
+              </div>
+
+              <!-- Subscription Details (shown when subscribed) -->
+              <div
+                class="subscription-details hidden"
+                id="subscription-details"
+              >
+                <div class="detail-row">
+                  <span class="detail-label">
+                    <i class="ph ph-calendar-check"></i>
+                    Next billing date
+                  </span>
+                  <span class="detail-value" id="next-billing-date">-</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">
+                    <i class="ph ph-credit-card"></i>
+                    Amount
+                  </span>
+                  <span class="detail-value" id="billing-amount"
+                    >€0.00/month</span
+                  >
+                </div>
+              </div>
+
+              <!-- Cancellation Notice (shown when cancelAtPeriodEnd) -->
+              <div class="cancellation-notice hidden" id="cancellation-notice">
+                <i class="ph ph-warning-circle"></i>
+                <div class="cancellation-text">
+                  <strong>Subscription ending</strong>
+                  <span
+                    >Your access will end on
+                    <span id="cancellation-date">-</span></span
+                  >
+                </div>
+                <button class="reactivate-btn" id="reactivate-btn">
+                  <i class="ph ph-arrow-counter-clockwise"></i>
+                  Reactivate
+                </button>
+              </div>
+            </div>
+
+            <!-- Upgrade Section (shown for free users) -->
+            <div class="billing-section" id="upgrade-section">
+              <div class="billing-section-label">Upgrade Your Experience</div>
+
+              <div class="pricing-cards">
+                <!-- Monthly Plan -->
+                <div class="pricing-card" data-plan="everydayMonthly">
+                  <div class="pricing-card-header">
+                    <div class="pricing-plan-name">Everyday Plan</div>
+                    <div class="pricing-interval">Charged monthly</div>
+                  </div>
+                  <div class="pricing-amount">
+                    <span class="currency">€</span>
+                    <span class="price">5</span>
+                    <span class="period">/month</span>
+                  </div>
+                  <ul class="pricing-features">
+                    <li>
+                      <i class="ph ph-check-circle"></i> 50 AI summaries daily
+                    </li>
+                    <li>
+                      <i class="ph ph-check-circle"></i> Bias & quality scores
+                    </li>
+                    <li><i class="ph ph-check-circle"></i> Unlimited saves</li>
+                    <li>
+                      <i class="ph ph-check-circle"></i> Full article access
+                    </li>
+                  </ul>
+                  <button class="pricing-btn" id="subscribe-monthly-btn">
+                    <span class="btn-text">Subscribe Monthly</span>
+                    <i class="ph ph-arrow-right"></i>
+                  </button>
+                </div>
+
+                <!-- Yearly Plan -->
+                <div class="pricing-card featured" data-plan="everydayYearly">
+                  <div class="pricing-badge">Save 17%</div>
+                  <div class="pricing-card-header">
+                    <div class="pricing-plan-name">Everyday Plan</div>
+                    <div class="pricing-interval">Charged yearly</div>
+                  </div>
+                  <div class="pricing-amount">
+                    <span class="currency">€</span>
+                    <span class="price">50</span>
+                    <span class="period">/year</span>
+                  </div>
+                  <div class="pricing-savings">€10 savings vs monthly</div>
+                  <ul class="pricing-features">
+                    <li>
+                      <i class="ph ph-check-circle"></i> 50 AI summaries daily
+                    </li>
+                    <li>
+                      <i class="ph ph-check-circle"></i> Bias & quality scores
+                    </li>
+                    <li><i class="ph ph-check-circle"></i> Unlimited saves</li>
+                    <li>
+                      <i class="ph ph-check-circle"></i> Full article access
+                    </li>
+                    <li><i class="ph ph-star"></i> Priority support</li>
+                  </ul>
+                  <button class="pricing-btn primary" id="subscribe-yearly-btn">
+                    <span class="btn-text">Subscribe Yearly</span>
+                    <i class="ph ph-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Trial CTA (shown if eligible) -->
+              <div class="trial-cta hidden" id="trial-cta">
+                <div class="trial-cta-icon">
+                  <i class="ph ph-gift"></i>
+                </div>
+                <div class="trial-cta-content">
+                  <div class="trial-cta-title">Start your 7-day free trial</div>
+                  <div class="trial-cta-text">
+                    Try all premium features free. Cancel anytime.
+                  </div>
+                </div>
+                <label class="trial-toggle">
+                  <input type="checkbox" id="trial-checkbox" checked />
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-label">Include trial</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Manage Subscription Section (shown for paid users) -->
+            <div class="billing-section hidden" id="manage-section">
+              <div class="billing-section-label">Manage Subscription</div>
+
+              <div class="billing-actions-grid">
+                <button class="billing-action-card" id="manage-payment-btn">
+                  <div class="action-icon">
+                    <i class="ph ph-credit-card"></i>
+                  </div>
+                  <div class="action-content">
+                    <div class="action-title">Payment Method</div>
+                    <div class="action-subtitle">Update your card details</div>
+                  </div>
+                  <i class="ph ph-arrow-right action-arrow"></i>
+                </button>
+
+                <button class="billing-action-card" id="billing-history-btn">
+                  <div class="action-icon">
+                    <i class="ph ph-receipt"></i>
+                  </div>
+                  <div class="action-content">
+                    <div class="action-title">Billing History</div>
+                    <div class="action-subtitle">View invoices & receipts</div>
+                  </div>
+                  <i class="ph ph-arrow-right action-arrow"></i>
+                </button>
+
+                <button class="billing-action-card" id="change-plan-btn">
+                  <div class="action-icon">
+                    <i class="ph ph-swap"></i>
+                  </div>
+                  <div class="action-content">
+                    <div class="action-title">Change Plan</div>
+                    <div class="action-subtitle">
+                      Switch between monthly & yearly
+                    </div>
+                  </div>
+                  <i class="ph ph-arrow-right action-arrow"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Cancel Section (shown for paid users) -->
+            <div
+              class="billing-section danger-section hidden"
+              id="cancel-section"
+            >
+              <div class="billing-section-label danger">
+                Cancel Subscription
+              </div>
+
+              <div class="cancel-card">
+                <div class="cancel-info">
+                  <i class="ph ph-info"></i>
+                  <p>
+                    Canceling will let you keep access until your current
+                    billing period ends. You won't be charged again. Note:
+                    cancelling during a free trial will result in its
+                    termination.
+                  </p>
+                </div>
+                <button class="cancel-btn" id="cancel-subscription-btn">
+                  <i class="ph ph-x-circle"></i>
+                  Cancel Subscription
+                </button>
+              </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="billing-section">
+              <div class="billing-section-label">Need Help?</div>
+              <div class="help-card">
+                <div class="help-item" id="help-item-contact">
+                  Contact Details
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cancel Subscription Confirmation Popup -->
+        <div class="fullscreen-popup" id="cancel-subscription-popup">
+          <div class="popup-card cancel-sub-variant">
+            <div class="popup-icon warning">
+              <i class="ph ph-warning"></i>
+            </div>
+            <h2 class="popup-title">Cancel Your Subscription?</h2>
+            <p class="popup-message">
+              You'll keep access to all premium features until
+              <strong id="cancel-access-date">your billing period ends</strong>.
+              After that, you'll be switched to the free plan.
+            </p>
+            <div class="popup-features-lost">
+              <div class="feature-lost-title">You'll lose access to:</div>
+              <ul class="features-lost-list">
+                <li><i class="ph ph-x"></i> 50 daily AI summaries</li>
+                <li><i class="ph ph-x"></i> Bias & quality scores</li>
+                <li><i class="ph ph-x"></i> Full article content</li>
+              </ul>
+            </div>
+            <div class="popup-actions">
+              <button class="popup-btn secondary" id="cancel-sub-popup-close">
+                Keep Subscription
+              </button>
+              <button class="popup-btn danger" id="confirm-cancel-subscription">
+                <i class="ph ph-x-circle"></i>
+                Cancel Anyway
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- VIEW 5: SETTINGS -->
+        <div
+          id="view-settings"
+          class="view-section sectionClasses"
+          style="display: none"
+        >
+          <h2 class="settings-title">Settings</h2>
+          <div class="settings-page">
+            <!-- Account Section -->
+            <div class="settings-section">
+              <div class="settings-section-label">Account</div>
+
+              <div class="settings-group">
+                <div class="settings-row accountGroup" id="nameRow">
+                  <div class="settings-row-left">
+                    <i class="ph ph-user-circle-dashed"></i>
+                    <span>Username</span>
+                  </div>
+
+                  <!-- Display State -->
+                  <span class="settings-name-value" id="currentNameDisplay"
+                    >Loading...</span
+                  >
+                  <div class="settings-name-display" id="nameDisplay">
+                    <button class="settings-text-btn" id="changeNameBtn">
+                      Edit <i class="ph ph-caret-right"></i>
+                    </button>
+                  </div>
+
+                  <!-- Edit State (hidden by default) -->
+                  <div class="settings-name-edit hidden" id="nameEdit">
+                    <input
+                      type="text"
+                      class="settings-name-input"
+                      id="nameInput"
+                      placeholder="Enter your name"
+                      maxlength="30"
+                    />
+                    <div class="settings-name-actions">
+                      <button
+                        class="settings-icon-btn cancel"
+                        id="cancelNameBtn"
+                        title="Cancel"
+                      >
+                        <i class="ph ph-x"></i>
+                      </button>
+                      <button
+                        class="settings-icon-btn save"
+                        id="saveNameBtn"
+                        title="Save"
+                      >
+                        <i class="ph ph-check"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-left">
+                    <i class="ph ph-envelope"></i>
+                    <span>Email</span>
+                  </div>
+                  <input
+                    id="emailUserDisabled"
+                    type="text"
+                    value="user@example.com"
+                    disabled
+                    class="settings-row-value emailValue"
+                  />
+                  <span
+                    class="settings-status verified"
+                    id="emailVerifiedStatus"
+                    >Verified
+                    <i class="ph-fill ph-check-circle verifiedIcon"></i>
+                  </span>
+                </div>
+
+                <div
+                  class="settings-row"
+                  id="verifyEmailRow"
+                  style="display: none"
+                >
+                  <div class="settings-row-left">
+                    <i class="ph ph-paper-plane-tilt"></i>
+                    <span>Verify email</span>
+                  </div>
+                  <button class="settings-text-btn" id="verifyEmailBtn">
+                    Resend <i class="ph ph-caret-right"></i>
+                  </button>
+                </div>
+
+                <div class="settings-row">
+                  <div class="settings-row-left">
+                    <i class="ph ph-lock"></i>
+                    <span>Password</span>
+                  </div>
+                  <button class="settings-text-btn" id="changePasswordBtn">
+                    Change <i class="ph ph-caret-right"></i>
+                  </button>
+                </div>
+              </div>
+
+              <p class="settings-hint" id="passNote">
+                Password change is disabled for Google accounts.
+              </p>
+            </div>
+
+            <!-- Region Section -->
+            <div class="settings-section">
+              <div class="settings-section-label">News Region</div>
+
+              <div class="settings-group">
+                <div class="settings-row accountGroup regionGroup">
+                  <div class="settings-row-left">
+                    <i class="ph ph-globe-hemisphere-west"></i>
+                    <span>Articles</span>
+                  </div>
+
+                  <div class="language-toggle" id="languageToggle">
+                    <button class="lang-option active" data-lang="en">
+                      <span class="lang-code">EN</span>
+                    </button>
+                    <button class="lang-option" data-lang="nl">
+                      <span class="lang-code">NL</span>
+                    </button>
+                    <div class="lang-slider"></div>
+                  </div>
+                </div>
+              </div>
+              <p class="settings-hint region-hint">
+                Region change may only be performed once per hour.
+              </p>
+
+              <!-- Confirmation Actions -->
+              <div class="language-actions hidden" id="languageActions">
+                <p class="language-actions-text" id="languageActionsText">
+                  Switch to Dutch news
+                </p>
+                <div class="language-actions-btns">
+                  <button class="lang-btn cancel" id="cancelLangBtn">
+                    Cancel
+                  </button>
+                  <button class="lang-btn confirm" id="confirmLangBtn">
+                    Switch Region
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Session Section -->
+            <div class="settings-section">
+              <div class="settings-section-label">Session</div>
+
+              <div class="settings-group">
+                <button class="settings-row clickable" id="logoutBtn">
+                  <div class="settings-row-left">
+                    <i class="ph ph-sign-out"></i>
+                    <span>Log out</span>
+                  </div>
+                  <i class="ph ph-caret-right settings-arrow"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Data Control -->
+            <div class="settings-section">
+              <div class="settings-section-label danger">Data Control</div>
+
+              <div class="settings-group danger">
+                <button
+                  class="settings-row clickable danger"
+                  id="deleteAccountBtn"
+                >
+                  <div class="settings-row-left">
+                    <i class="ph ph-trash"></i>
+                    <span>Delete account</span>
+                  </div>
+                  <i class="ph ph-caret-right settings-arrow"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <!-- Toast/Popup Container -->
+    <div class="toast-container" id="toast-container"></div>
+    <!-- Tooltip Portal Container -->
+    <div class="tooltip-portal" id="tooltip-portal"></div>
+
+    <!-- Password Reset Email Sent Popup -->
+    <div class="fullscreen-popup" id="password-reset-popup">
+      <div class="popup-card">
+        <div class="popup-icon success">
+          <i class="ph ph-envelope-simple"></i>
+        </div>
+        <h2 class="popup-title">Check Your Email</h2>
+        <p class="popup-message">
+          We've sent a password reset link to your email address. Please check
+          your inbox and click the link to reset your password.
+        </p>
+        <p class="popup-note">
+          <i class="ph ph-info"></i>
+          The link will expire in 60 minutes
+        </p>
+        <button class="popup-btn primary" id="close-password-popup">
+          Got it
+        </button>
+      </div>
+    </div>
+
+    <!-- Account Deletion Pending Page -->
+    <div id="deletion-pending-page" class="deletion-pending-page hidden">
+      <div class="deletion-pending-backdrop"></div>
+      <div class="deletion-pending-content">
+        <!-- Header Logo -->
+        <div class="deletion-logo">
+          Header<i class="ph-fill ph-sparkle"></i>
+        </div>
+
+        <!-- Warning Icon -->
+        <div class="deletion-icon">
+          <i class="ph ph-trash"></i>
+        </div>
+
+        <h1 class="deletion-title">Account Scheduled for Deletion</h1>
+
+        <p class="deletion-message">
+          Your account and all associated data will be permanently deleted on:
+        </p>
+
+        <!-- Deletion Date Display -->
+        <div class="deletion-date-box">
+          <i class="ph ph-calendar-x"></i>
+          <span id="deletion-date-display">Loading...</span>
+        </div>
+
+        <!-- Countdown Timer -->
+        <div class="deletion-countdown">
+          <div class="countdown-item">
+            <span class="countdown-value" id="countdown-days-left">0</span>
+            <span class="countdown-label">days</span>
+          </div>
+          <div class="countdown-separator">:</div>
+          <div class="countdown-item">
+            <span class="countdown-value" id="countdown-hours-left">0</span>
+            <span class="countdown-label">hours</span>
+          </div>
+          <div class="countdown-separator">:</div>
+          <div class="countdown-item">
+            <span class="countdown-value" id="countdown-minutes-left">0</span>
+            <span class="countdown-label">minutes</span>
+          </div>
+        </div>
+
+        <!-- What Will Happen Info -->
+        <div class="deletion-info-box">
+          <div class="deletion-info-header">
+            <i class="ph ph-warning"></i>
+            <span>What happens when your account is deleted:</span>
+          </div>
+          <ul class="deletion-info-list">
+            <li>
+              <i class="ph ph-x-circle"></i>
+              <span>All saved articles will be permanently removed</span>
+            </li>
+            <li>
+              <i class="ph ph-x-circle"></i>
+              <span>Your reading preferences and history will be erased</span>
+            </li>
+            <li>
+              <i class="ph ph-x-circle"></i>
+              <span>Active subscriptions will be canceled (no refunds)</span>
+            </li>
+            <li>
+              <i class="ph ph-x-circle"></i>
+              <span>Your email will be released for new registrations</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Additional Note -->
+        <div class="deletion-note">
+          <i class="ph ph-info"></i>
+          <span
+            >Changed your mind? You can cancel the deletion process anytime
+            before the scheduled date.</span
+          >
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="deletion-actions">
+          <button class="deletion-btn primary" id="cancel-deletion-btn">
+            <i class="ph ph-arrow-counter-clockwise"></i>
+            Cancel Deletion
+          </button>
+          <button class="deletion-btn secondary" id="logout-anyway-btn">
+            <i class="ph ph-sign-out"></i>
+            Log Out
+          </button>
+        </div>
+
+        <!-- Contact Support Link -->
+        <p class="deletion-support">
+          Need help?
+          <a
+            href="mailto:support@header.com"
+            id="deletion-support-email"
+            target="_blank"
+            >Contact Support</a
+          >
+        </p>
+      </div>
+    </div>
+
+    <!-- Delete Account Confirmation Popup -->
+    <div class="fullscreen-popup" id="delete-account-popup">
+      <div class="popup-card delete-variant">
+        <div class="popup-icon danger">
+          <i class="ph ph-warning"></i>
+        </div>
+        <h2 class="popup-title">Delete Your Account?</h2>
+        <p class="popup-message">
+          This action is <strong>permanent</strong> and cannot be undone. All
+          your data, saved articles and preferences, will be permanently
+          deleted.
+        </p>
+        <div class="popup-warning-box">
+          <i class="ph ph-warning-circle"></i>
+          <span
+            >You will loose access to Header for this account and any active
+            subscriptions will be terminated after deletion.</span
+          >
+        </div>
+        <div class="popup-actions">
+          <button class="popup-btn secondary" id="cancel-delete-popup">
+            Cancel
+          </button>
+          <button class="popup-btn danger" id="confirm-delete-account">
+            <i class="ph ph-trash"></i>
+            Delete My Account
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Welcome Banner Overlay -->
+    <div id="welcome-banner" class="welcome-banner hidden">
+      <div class="welcome-banner-backdrop"></div>
+      <div class="welcome-banner-content">
+        <div class="welcome-banner-icon">
+          <i class="ph-fill ph-sparkle"></i>
+        </div>
+        <h1 class="welcome-banner-title">Welcome to Header!</h1>
+        <p class="welcome-banner-subtitle" id="welcome-user-greeting">
+          Great to have you here.
+        </p>
+        <div class="welcome-banner-features">
+          <div class="welcome-feature">
+            <i class="ph ph-newspaper"></i>
+            <span>AI-powered news summaries, updated daily</span>
+          </div>
+          <div class="welcome-feature">
+            <i class="ph ph-star"></i>
+            <span>Save articles to read later</span>
+          </div>
+          <div class="welcome-feature">
+            <i class="ph ph-scales"></i>
+            <span>Bias and quality scores for every article</span>
+          </div>
+        </div>
+        <button id="welcome-got-it-btn" class="welcome-got-it-btn">
+          Got it, let's go
+          <i class="ph ph-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Feedback Popup -->
+    <div class="fullscreen-popup" id="feedback-popup">
+      <div class="popup-card feedback-variant">
+        <div class="popup-icon feedback popup-icon-feedback">
+          <i class="ph-fill ph-seal-warning"></i>
+        </div>
+        <h2 class="popup-title">Submit Feedback</h2>
+        <p class="popup-message feedback-message">
+          Help us improve by reporting problems with this article. Your feedback
+          helps maintain content quality.
+        </p>
+
+        <div class="feedback-form">
+          <div class="feedback-options">
+            <label class="feedback-option" id="feedback-option">
+              <input
+                type="radio"
+                name="feedback-type"
+                value="inaccurate"
+                checked
+              />
+              <span class="feedback-option-box">
+                <i class="ph ph-warning-circle"></i>
+                <span>Inaccurate Information</span>
+              </span>
+            </label>
+            <label class="feedback-option" id="feedback-option">
+              <input type="radio" name="feedback-type" value="biased" />
+              <span class="feedback-option-box">
+                <i class="ph ph-scales"></i>
+                <span>Biased Content</span>
+              </span>
+            </label>
+            <label class="feedback-option" id="feedback-option">
+              <input type="radio" name="feedback-type" value="outdated" />
+              <span class="feedback-option-box">
+                <i class="ph ph-clock-countdown"></i>
+                <span>Outdated</span>
+              </span>
+            </label>
+            <label class="feedback-option" id="feedback-option">
+              <input type="radio" name="feedback-type" value="bad-summary" />
+              <span class="feedback-option-box">
+                <i class="ph ph-article"></i>
+                <span>Bad Summary</span>
+              </span>
+            </label>
+            <label class="feedback-option" id="feedback-option">
+              <input type="radio" name="feedback-type" value="other" />
+              <span class="feedback-option-box">
+                <i class="ph ph-chat-teardrop-dots"></i>
+                <span>Other</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="feedback-textarea-wrapper">
+            <textarea
+              id="feedback-details"
+              class="feedback-textarea"
+              placeholder="Please provide more details about the issue (optional)..."
+              rows="3"
+              maxlength="500"
+            ></textarea>
+            <span class="feedback-char-count"
+              ><span id="feedback-char-current">0</span>/500</span
+            >
+          </div>
+        </div>
+
+        <div class="popup-actions">
+          <button class="popup-btn secondary" id="cancel-feedback-popup">
+            Cancel
+          </button>
+          <button class="popup-btn primary" id="submit-feedback">
+            <i class="ph ph-paper-plane-tilt"></i>
+            Submit Report
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="back-link" id="back-link">
+      <button id="backBtn" class="link-btn">
+        <i class="ph ph-arrow-left"></i>
+        Back to Home
+      </button>
+    </div>
+  </body>
+</html>
