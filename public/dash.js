@@ -3145,7 +3145,17 @@ document
   });
 
 // --- Save button logic ---
-saveBtn.forEach((btn) => {
+
+let firstBtn;
+saveBtn.forEach((btn, index) => {
+  if (index === 0) {
+    firstBtn = btn;
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "f") {
+        firstBtn.click();
+      }
+    });
+  }
   btn.addEventListener("click", async () => {
     let response;
     const isCurrentlyActive = btn.classList.contains("active");
