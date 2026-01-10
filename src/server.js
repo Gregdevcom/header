@@ -852,7 +852,7 @@ app.post(
       await session.startTransaction();
       // 1 = favorite, 2 = unfavorite
       if (action === 1) {
-        if (req.user.plan === "free" && req.user.savedArticles >= 3) {
+        if (req.user.plan === "free" && req.user.savedArticles.length >= 3) {
           await session.abortTransaction();
           return res.sendStatus(405); // user cannot save more than 3 articles!
         }
@@ -1664,13 +1664,6 @@ async function sendDeletionWarning(userEmail, userName, deleteDate) {
     from: `"Header App" <${process.env.EMAIL_APP}>`,
     to: userEmail,
     subject: "Your Header account is scheduled for deletion",
-    attachments: [
-      {
-        filename: "logo.png",
-        path: path.join(__dirname, "..", "public", "logo.png"),
-        cid: "headerlogo", // Content-ID to reference in HTML
-      },
-    ],
     html: `
       <!DOCTYPE html>
 <html lang="en">
@@ -1729,13 +1722,12 @@ async function sendDeletionWarning(userEmail, userName, deleteDate) {
                 >
                   <tr>
                     <td>
-                      <!-- Use cid: to reference the attached image -->
                       <img
-                        src="cid:headerlogo"
-                        alt="Header"
-                        width="200"
-                        style="display: block; margin: 0 auto 24px auto"
-                      />
+  src="https://header.news/logo.png"
+  alt="Header"
+  width="200"
+  style="display:block"
+/>
                     </td>
                   </tr>
                 </table>
@@ -2069,11 +2061,11 @@ async function sendDeletionWarning(userEmail, userName, deleteDate) {
                   <tr>
                     <td>
                       <img
-                        src="cid:headerlogo"
-                        alt="Header"
-                        width="200"
-                        style="display: block; margin: 0 auto 24px auto"
-                      />
+  src="https://header.news/logo.png"
+  alt="Header"
+  width="200"
+  style="display:block"
+/>
                     </td>
                   </tr>
                 </table>
@@ -2410,13 +2402,6 @@ async function sendTrialEndingEmail(userEmail, userName, trialEndTimestamp) {
     from: `"Header App" <${process.env.EMAIL_APP}>`,
     to: userEmail,
     subject: "Your Header trial is ending soon",
-    attachments: [
-      {
-        filename: "logo.png",
-        path: path.join(__dirname, "..", "public", "logo.png"),
-        cid: "headerlogo",
-      },
-    ],
     html: `
       <!DOCTYPE html>
 <html lang="en">
@@ -2476,11 +2461,11 @@ async function sendTrialEndingEmail(userEmail, userName, trialEndTimestamp) {
                   <tr>
                     <td>
                       <img
-                        src="cid:headerlogo"
-                        alt="Header"
-                        width="200"
-                        style="display: block; margin: 0 auto"
-                      />
+  src="https://header.news/logo.png"
+  alt="Header"
+  width="200"
+  style="display:block"
+/>
                     </td>
                   </tr>
                 </table>
@@ -2840,11 +2825,11 @@ async function sendTrialEndingEmail(userEmail, userName, trialEndTimestamp) {
                   <tr>
                     <td>
                       <img
-                        src="cid:headerlogo"
-                        alt="Header"
-                        width="200"
-                        style="display: block; margin: 0 auto"
-                      />
+  src="https://header.news/logo.png"
+  alt="Header"
+  width="200"
+  style="display:block"
+/>
                     </td>
                   </tr>
                 </table>
@@ -3069,13 +3054,6 @@ async function sendVeri(userEmail, token, userName) {
     from: `"Header App" <${process.env.EMAIL_APP}>`,
     to: userEmail,
     subject: "Verify your Header account",
-    attachments: [
-      {
-        filename: "logo.png",
-        path: path.join(__dirname, "..", "public", "logo.png"),
-        cid: "headerlogo",
-      },
-    ],
     html: `
       <!DOCTYPE html>
 <html lang="en">
@@ -3135,11 +3113,11 @@ async function sendVeri(userEmail, token, userName) {
                   <tr>
                     <td>
                       <img
-                        src="cid:headerlogo"
-                        alt="Header"
-                        width="200"
-                        style="display: block; margin: 0 auto"
-                      />
+  src="https://header.news/logo.png"
+  alt="Header"
+  width="200"
+  style="display:block"
+/>
                     </td>
                   </tr>
                 </table>
@@ -3351,11 +3329,11 @@ async function sendVeri(userEmail, token, userName) {
                   <tr>
                     <td>
                       <img
-                        src="cid:headerlogo"
-                        alt="Header"
-                        width="200"
-                        style="display: block; margin: 0 auto"
-                      />
+  src="https://header.news/logo.png"
+  alt="Header"
+  width="200"
+  style="display:block"
+/>
                     </td>
                   </tr>
                 </table>
@@ -3418,13 +3396,6 @@ async function sendReset(userEmail, resetToken, userName) {
     from: `"Header App" <${process.env.EMAIL_APP}>`,
     to: userEmail,
     subject: "Password Change on Header",
-    attachments: [
-      {
-        filename: "logo.png",
-        path: path.join(__dirname, "..", "public", "logo.png"),
-        cid: "headerlogo",
-      },
-    ],
     html: `
       <!DOCTYPE html>
 <html lang="en">
@@ -3483,11 +3454,11 @@ async function sendReset(userEmail, resetToken, userName) {
                   <tr>
                     <td>
                       <img
-                        src="cid:headerlogo"
-                        alt="Header"
-                        width="200"
-                        style="display: block; margin: 0 auto"
-                      />
+  src="https://header.news/logo.png"
+  alt="Header"
+  width="200"
+  style="display:block"
+/>
                     </td>
                   </tr>
                 </table>
@@ -3654,11 +3625,11 @@ async function sendReset(userEmail, resetToken, userName) {
                   <tr>
                     <td>
                       <img
-                        src="cid:headerlogo"
-                        alt="Header"
-                        width="200"
-                        style="display: block; margin: 0 auto"
-                      />
+  src="https://header.news/logo.png"
+  alt="Header"
+  width="200"
+  style="display:block"
+/>
                     </td>
                   </tr>
                 </table>
