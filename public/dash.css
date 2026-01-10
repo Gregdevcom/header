@@ -4576,7 +4576,7 @@ li {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
 
   /* Text & Icon Styling for Readability */
-  color: #ffffff;
+  color: black;
   font-weight: 600;
   font-size: 14px;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -4640,7 +4640,7 @@ li {
 
 .swipe-indicator.triggered .indicator-content i {
   /* Make the icon shine brightly */
-  color: #fff;
+  color: black;
   text-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 8px rgba(255, 255, 255, 1);
 }
 
