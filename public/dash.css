@@ -4477,7 +4477,7 @@ li {
 }
 
 .deletion-pending-page.hidden {
-  display: flex;
+  display: none;
 }
 
 .deletion-pending-backdrop {
