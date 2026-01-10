@@ -1625,7 +1625,7 @@ function showSwipeHint() {
   hint.className = "swipe-hint";
   hint.innerHTML = `
     <i class="ph ph-hand-swipe-left"></i>
-    <span>Swipe left for next • Swipe up to read</span>
+    <span>Swipe left & right to navigate • Swipe up for full view</span>
   `;
 
   document.getElementById("view-feed").appendChild(hint);
@@ -1636,11 +1636,7 @@ function showSwipeHint() {
     localStorage.setItem("swipeHintShown", "true");
   };
 
-  setTimeout(removeHint, 5000);
-
-  document
-    .getElementById("active-card")
-    .addEventListener("touchstart", removeHint, { once: true });
+  setTimeout(removeHint, 7000);
 }
 
 // --- Creates portal for smart tooltip ---
