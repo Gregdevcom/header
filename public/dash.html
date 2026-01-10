@@ -935,6 +935,110 @@
       </div>
     </div>
 
+    <!-- Account Deletion Pending Page -->
+    <div id="deletion-pending-page" class="deletion-pending-page hidden">
+      <div class="deletion-pending-backdrop"></div>
+      <div class="deletion-pending-content">
+        <!-- Header Logo -->
+        <div class="deletion-logo">
+          Header<i class="ph-fill ph-sparkle"></i>
+        </div>
+
+        <!-- Warning Icon -->
+        <div class="deletion-icon">
+          <i class="ph ph-trash"></i>
+        </div>
+
+        <h1 class="deletion-title">Account Scheduled for Deletion</h1>
+
+        <p class="deletion-message">
+          Your account and all associated data will be permanently deleted on:
+        </p>
+
+        <!-- Deletion Date Display -->
+        <div class="deletion-date-box">
+          <i class="ph ph-calendar-x"></i>
+          <span id="deletion-date-display">Loading...</span>
+        </div>
+
+        <!-- Countdown Timer -->
+        <div class="deletion-countdown">
+          <div class="countdown-item">
+            <span class="countdown-value" id="countdown-days-left">0</span>
+            <span class="countdown-label">days</span>
+          </div>
+          <div class="countdown-separator">:</div>
+          <div class="countdown-item">
+            <span class="countdown-value" id="countdown-hours-left">0</span>
+            <span class="countdown-label">hours</span>
+          </div>
+          <div class="countdown-separator">:</div>
+          <div class="countdown-item">
+            <span class="countdown-value" id="countdown-minutes-left">0</span>
+            <span class="countdown-label">minutes</span>
+          </div>
+        </div>
+
+        <!-- What Will Happen Info -->
+        <div class="deletion-info-box">
+          <div class="deletion-info-header">
+            <i class="ph ph-warning"></i>
+            <span>What happens when your account is deleted:</span>
+          </div>
+          <ul class="deletion-info-list">
+            <li>
+              <i class="ph ph-x-circle"></i>
+              <span>All saved articles will be permanently removed</span>
+            </li>
+            <li>
+              <i class="ph ph-x-circle"></i>
+              <span>Your reading preferences and history will be erased</span>
+            </li>
+            <li>
+              <i class="ph ph-x-circle"></i>
+              <span>Active subscriptions will be canceled (no refunds)</span>
+            </li>
+            <li>
+              <i class="ph ph-x-circle"></i>
+              <span>Your email will be released for new registrations</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Additional Note -->
+        <div class="deletion-note">
+          <i class="ph ph-info"></i>
+          <span
+            >Changed your mind? You can cancel the deletion process anytime
+            before the scheduled date.</span
+          >
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="deletion-actions">
+          <button class="deletion-btn primary" id="cancel-deletion-btn">
+            <i class="ph ph-arrow-counter-clockwise"></i>
+            Cancel Deletion
+          </button>
+          <button class="deletion-btn secondary" id="logout-anyway-btn">
+            <i class="ph ph-sign-out"></i>
+            Log Out
+          </button>
+        </div>
+
+        <!-- Contact Support Link -->
+        <p class="deletion-support">
+          Need help?
+          <a
+            href="mailto:support@header.com"
+            id="deletion-support-email"
+            target="_blank"
+            >Contact Support</a
+          >
+        </p>
+      </div>
+    </div>
+
     <!-- Delete Account Confirmation Popup -->
     <div class="fullscreen-popup" id="delete-account-popup">
       <div class="popup-card delete-variant">

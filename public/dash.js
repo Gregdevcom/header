@@ -501,6 +501,141 @@ async function loadDashboard() {
       }
     }
     data = await response.json();
+
+    if (data.isDeactivated) {
+      // Hide loader, show deletion page instead of app
+      document.getElementById("loader").style.display = "none";
+      document.getElementById("app").style.display = "none";
+
+      const deletionPage = document.getElementById("deletion-pending-page");
+      deletionPage.classList.remove("hidden");
+
+      // Update support email if available
+      if (data.contactEmail) {
+        const supportLink = document.getElementById("deletion-support-email");
+        supportLink.href = `mailto:${data.contactEmail}`;
+        supportLink.textContent = "Contact Support";
+      }
+
+      // Parse and display the deletion date
+      const deleteDate = new Date(data.deleteAt);
+      const dateOptions = {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      };
+      document.getElementById("deletion-date-display").textContent =
+        deleteDate.toLocaleDateString("en-US", dateOptions);
+
+      // Countdown update function
+      function updateDeletionCountdown() {
+        const now = new Date();
+        const diff = deleteDate - now;
+
+        if (diff <= 0) {
+          // Deletion time has passed
+          document.getElementById("countdown-days-left").textContent = "0";
+          document.getElementById("countdown-hours-left").textContent = "0";
+          document.getElementById("countdown-minutes-left").textContent = "0";
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor(
+          (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+        document.getElementById("countdown-days-left").textContent = days;
+        document.getElementById("countdown-hours-left").textContent = hours
+          .toString()
+          .padStart(2, "0");
+        document.getElementById("countdown-minutes-left").textContent = minutes
+          .toString()
+          .padStart(2, "0");
+      }
+
+      // Initial countdown update and interval
+      updateDeletionCountdown();
+      const countdownInterval = setInterval(updateDeletionCountdown, 60000); // Update every minute
+
+      // Cancel Deletion Button Handler
+      document
+        .getElementById("cancel-deletion-btn")
+        .addEventListener("click", async () => {
+          const btn = document.getElementById("cancel-deletion-btn");
+          const originalContent = btn.innerHTML;
+
+          btn.disabled = true;
+          btn.innerHTML =
+            '<i class="ph ph-spinner ph-spin"></i> Restoring Account...';
+
+          try {
+            const response = await fetch("/api/refresh/cancel-deletion", {
+              method: "POST",
+              credentials: "include",
+            });
+
+            if (response.ok) {
+              clearInterval(countdownInterval);
+              btn.innerHTML = '<i class="ph ph-check"></i> Account Restored!';
+              btn.style.background =
+                "linear-gradient(135deg, #22c55e, #16a34a)";
+
+              showToast(
+                "success",
+                "Account Restored",
+                "Your account deletion has been canceled. Redirecting..."
+              );
+
+              setTimeout(() => {
+                window.location.reload();
+              }, 2000);
+            } else if (response.status === 403) {
+              showToast("info", "Session Expired", "Please log in again.");
+              setTimeout(() => {
+                window.location.href = "/log-in";
+              }, 1000);
+            } else {
+              throw new Error("Failed to cancel deletion");
+            }
+          } catch (error) {
+            console.error("Cancel deletion error:", error);
+            showToast(
+              "error",
+              "Error",
+              "Failed to cancel deletion. Please try again or contact support."
+            );
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+          }
+        });
+
+      // Logout Anyway Button Handler
+      document
+        .getElementById("logout-anyway-btn")
+        .addEventListener("click", async () => {
+          const btn = document.getElementById("logout-anyway-btn");
+          btn.disabled = true;
+          btn.innerHTML =
+            '<i class="ph ph-spinner ph-spin"></i> Logging out...';
+
+          try {
+            await fetch("/api/refresh/logout", {
+              credentials: "include",
+            });
+            window.location.href = "/log-in";
+          } catch (error) {
+            window.location.href = "/log-in";
+          }
+        });
+
+      return; // Stop loading the rest of the dashboard
+    }
+
     document.getElementById(
       "help-item-contact"
     ).innerHTML = `<i class="ph ph-question"></i><span>Have billing questions? Contact us at
@@ -657,7 +792,10 @@ async function loadDashboard() {
                 });
               } else {
                 await fetch("/logout");
-                window.location.href = "/";
+                showToast("info", "Session Expired", "Please log in again.");
+                setTimeout(() => {
+                  window.location.href = "/log-in";
+                }, 1000);
                 throw new Error();
               }
             }
@@ -734,7 +872,10 @@ async function checkSession() {
       credentials: "include",
     });
     if (response.status === 401 || response.status === 403) {
-      window.location.href = "/log-in";
+      showToast("info", "Session Expired", "Please log in again.");
+      setTimeout(() => {
+        window.location.href = "/log-in";
+      }, 1000);
     }
   } catch (e) {
     console.error(e);
@@ -1370,7 +1511,10 @@ async function updateBillingUI() {
       });
 
       if (responseRefresh.status === 401 || responseRefresh.status === 403) {
-        window.location.href = "/log-in";
+        showToast("info", "Session Expired", "Please log in again.");
+        setTimeout(() => {
+          window.location.href = "/log-in";
+        }, 1000);
         return;
       }
 
@@ -1608,7 +1752,7 @@ async function createCheckoutSession(plan, withTrial = false) {
       btn.disabled = false;
       btn.innerHTML = originalContent;
     } else if (response.status === 403) {
-      location.reload();
+      window.loca;
     } else {
       throw new Error("Failed to create checkout session");
     }
@@ -1641,7 +1785,10 @@ async function openBillingPortal() {
     } else if (response.status === 404) {
       showToast("error", "No Subscription", "No active subscription found.");
     } else if (response.status === 403) {
-      location.reload();
+      showToast("info", "Session Expired", "Please log in again.");
+      setTimeout(() => {
+        window.location.href = "/log-in";
+      }, 1000);
     } else {
       throw new Error("Failed to open billing portal");
     }
@@ -1690,7 +1837,10 @@ async function cancelSubscription() {
 
       // Update local data and refresh UI
     } else if (response.status === 403) {
-      location.reload();
+      showToast("info", "Session Expired", "Please log in again.");
+      setTimeout(() => {
+        window.location.href = "/log-in";
+      }, 1000);
     } else {
       throw new Error("Failed to cancel subscription");
     }
@@ -1735,7 +1885,10 @@ async function reactivateSubscription() {
     } else if (response.status === 404) {
       showToast("error", "Error", "No subscription found to reactivate.");
     } else if (response.status === 403) {
-      location.reload();
+      showToast("info", "Session Expired", "Please log in again.");
+      setTimeout(() => {
+        window.location.href = "/log-in";
+      }, 1000);
     } else {
       throw new Error("Failed to reactivate subscription");
     }
@@ -1897,7 +2050,10 @@ async function dismissWelcomeBanner() {
       banner.classList.add("hidden");
       document.body.style.overflow = "";
     } else if (response.status === 403) {
-      location.reload(); // bad ui>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+      showToast("info", "Session Expired", "Please log in again.");
+      setTimeout(() => {
+        window.location.href = "/log-in";
+      }, 1000);
     } else {
       throw new Error();
     }
@@ -2021,7 +2177,10 @@ confirmLangBtn.addEventListener("click", async () => {
         "This is already your current region."
       );
     } else if (res.status === 403) {
-      location.reload();
+      showToast("info", "Session Expired", "Please log in again.");
+      setTimeout(() => {
+        window.location.href = "/log-in";
+      }, 1000);
     } else if (res.status === 503) {
       setLanguageToggle(currentLang);
       langActions.classList.add("hidden");
@@ -2162,7 +2321,10 @@ saveNameBtn.addEventListener("click", async () => {
         "Your name has been changed successfully."
       );
     } else if (response.status === 403) {
-      location.reload();
+      showToast("info", "Session Expired", "Please log in again.");
+      setTimeout(() => {
+        window.location.href = "/log-in";
+      }, 1000);
     } else if (response.status === 400) {
       showToast(
         "warning",
@@ -2397,7 +2559,10 @@ changePasswordBtn.addEventListener("click", async () => {
     if (response.ok) {
       showPasswordResetPopup();
     } else if (response.status === 403) {
-      location.reload();
+      showToast("info", "Session Expired", "Please log in again.");
+      setTimeout(() => {
+        window.location.href = "/log-in";
+      }, 1000);
     } else {
       showToast("error", "Error", "We were unable to process this request.");
     }
@@ -2512,7 +2677,10 @@ document
           );
         }, 1000);
       } else if (response.status === 403) {
-        location.reload();
+        showToast("info", "Session Expired", "Please log in again.");
+        setTimeout(() => {
+          window.location.href = "/log-in";
+        }, 1000);
       } else if (response.status === 429) {
         hideFeedbackPopup();
         showToast(
@@ -2568,7 +2736,10 @@ saveBtn.forEach((btn) => {
             'This article is already in your saved list, open the sidebar and head over to "Saved" to view it.'
           );
         } else if (response.status === 403) {
-          location.reload(); // Instead retry to fetch credentials
+          showToast("info", "Session Expired", "Please log in again.");
+          setTimeout(() => {
+            window.location.href = "/log-in";
+          }, 1000);
         } else if (response.status === 405) {
           showToast(
             "warning",
@@ -2665,7 +2836,10 @@ saveBtn.forEach((btn) => {
 
           return;
         } else if (response.status === 403) {
-          location.reload();
+          showToast("info", "Session Expired", "Please log in again.");
+          setTimeout(() => {
+            window.location.href = "/log-in";
+          }, 1000);
         } else {
           showToast(
             "error",
@@ -2856,7 +3030,10 @@ navItems.forEach((item) => {
             grid.style.justifyContent = "";
             grid.style.marginTop = "";
           } else if (response.status === 403) {
-            location.reload();
+            showToast("info", "Session Expired", "Please log in again.");
+            setTimeout(() => {
+              window.location.href = "/log-in";
+            }, 1000);
           } else {
             showToast(
               "error",

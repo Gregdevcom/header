@@ -829,6 +829,15 @@
       const errorMsgElem = document.getElementById("credentialsErr");
       const submitBtn = document.getElementById("submitBtn");
 
+      const params = new URLSearchParams(window.location.search);
+      const error = params.get("error");
+
+      if (error === "google_failed") {
+        errorMsgElem.innerHTML =
+          '<i class="ph ph-warning-circle"></i><span>Google sign-in didn’t complete. Please try again or use another sign-in method.</span>';
+        errorMsgElem.classList.add("show");
+      }
+
       // Toggle password visibility
       document.querySelectorAll(".toggle-password").forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -871,6 +880,10 @@
           } else if (response.status === 429) {
             errorMsgElem.innerHTML =
               '<i class="ph ph-warning-circle"></i><span>Too many attempts. Please wait and try again.</span>';
+            errorMsgElem.classList.add("show");
+          } else if (response.status === 400) {
+            errorMsgElem.innerHTML =
+              '<i class="ph ph-warning-circle"></i><span>This account can’t be accessed with Google. Please sign in using your original method.</span>';
             errorMsgElem.classList.add("show");
           } else {
             errorMsgElem.innerHTML =

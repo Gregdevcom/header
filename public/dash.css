@@ -4458,6 +4458,378 @@ li {
   transform: translateX(3px);
 }
 
+/* ================================================
+   ACCOUNT DELETION PENDING PAGE
+   ================================================ */
+
+.deletion-pending-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.deletion-pending-page.hidden {
+  display: flex;
+}
+
+.deletion-pending-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+  z-index: -1;
+}
+
+.deletion-pending-content {
+  background: var(--surface-card, #1e1e2e);
+  border-radius: 24px;
+  padding: 48px 40px;
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  animation: deletionSlideIn 0.4s ease-out;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@keyframes deletionSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Logo */
+.deletion-logo {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-white, #ffffff);
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.deletion-logo i {
+  color: var(--primary);
+  margin-bottom: 10px;
+  font-size: 24px;
+}
+
+/* Warning Icon */
+.deletion-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.2),
+    rgba(239, 68, 68, 0.1)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  border: 2px solid rgba(239, 68, 68, 0.3);
+}
+
+.deletion-icon i {
+  font-size: 36px;
+  color: #ef4444;
+}
+
+/* Title */
+.deletion-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-white, #ffffff);
+  margin: 0 0 12px 0;
+}
+
+/* Message */
+.deletion-message {
+  font-size: 15px;
+  color: var(--text-gray, #9ca3af);
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+/* Date Box */
+.deletion-date-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  padding: 14px 24px;
+  margin-bottom: 24px;
+}
+
+.deletion-date-box i {
+  font-size: 20px;
+  color: #ef4444;
+}
+
+.deletion-date-box span {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fca5a5;
+}
+
+/* Countdown Timer */
+.deletion-countdown {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.countdown-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px 20px;
+  min-width: 70px;
+}
+
+.countdown-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-white, #ffffff);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.countdown-label {
+  font-size: 11px;
+  color: var(--text-gray, #9ca3af);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 6px;
+}
+
+.countdown-separator {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-gray, #9ca3af);
+  opacity: 0.5;
+}
+
+/* Info Box */
+.deletion-info-box {
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.deletion-info-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  color: #fca5a5;
+  font-size: 14px;
+}
+
+.deletion-info-header i {
+  font-size: 18px;
+  color: #ef4444;
+}
+
+.deletion-info-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.deletion-info-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-gray, #9ca3af);
+  line-height: 1.4;
+}
+
+.deletion-info-list li i {
+  font-size: 16px;
+  color: #ef4444;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Note */
+.deletion-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 28px;
+  text-align: left;
+}
+
+.deletion-note i {
+  font-size: 18px;
+  color: #22c55e;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.deletion-note span {
+  font-size: 13px;
+  color: #86efac;
+  line-height: 1.5;
+}
+
+/* Action Buttons */
+.deletion-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.deletion-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  width: 100%;
+}
+
+.deletion-btn.primary {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+}
+
+.deletion-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+}
+
+.deletion-btn.primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.deletion-btn.secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-gray, #9ca3af);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.deletion-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-white, #ffffff);
+}
+
+.deletion-btn i {
+  font-size: 18px;
+}
+
+/* Support Link */
+.deletion-support {
+  font-size: 13px;
+  color: var(--text-gray, #9ca3af);
+  margin: 0;
+}
+
+.deletion-support a {
+  color: #60a5fa;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.deletion-support a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .deletion-pending-content {
+    padding: 32px 24px;
+    border-radius: 20px;
+  }
+
+  .deletion-logo {
+    font-size: 24px;
+  }
+
+  .deletion-icon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .deletion-icon i {
+    font-size: 28px;
+  }
+
+  .deletion-title {
+    font-size: 20px;
+  }
+
+  .countdown-item {
+    padding: 12px 14px;
+    min-width: 56px;
+  }
+
+  .countdown-value {
+    font-size: 24px;
+  }
+
+  .countdown-separator {
+    font-size: 22px;
+  }
+
+  .deletion-date-box {
+    padding: 12px 18px;
+  }
+
+  .deletion-date-box span {
+    font-size: 14px;
+  }
+}
+
 /* Mobile adjustments */
 @media (max-width: 500px) {
   .welcome-banner-content {
