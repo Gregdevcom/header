@@ -907,11 +907,14 @@ body {
 
 /* Responsive adjustments for scores */
 
-@media (max-width: 350px) {
-  .overlay-score-info-btn {
+@media (max-width: 400px) {
+  .feedback-message {
     display: none;
   }
-  .feedback-message {
+}
+
+@media (max-width: 350px) {
+  .overlay-score-info-btn {
     display: none;
   }
 }
