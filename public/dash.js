@@ -2411,8 +2411,7 @@ document
         credentials: "include",
       });
       if (response.ok) {
-        localStorage.clear();
-        window.location.href = "/";
+        location.reload();
       } else if (response.status === 401) {
         hideDeleteAccountPopup();
         showToast(
