@@ -12,6 +12,7 @@ import helmet from "helmet";
 import crypto from "crypto";
 import mongoose from "mongoose";
 import Stripe from "stripe";
+import cron from "node-cron";
 import {
   ArticleEN,
   ArchiveEN,
@@ -25,6 +26,7 @@ import {
   validatePass,
   validateName,
   validateEmail,
+  validateObjectId,
 } from "./validators.js";
 import { generalLimiter, authLimiter } from "./rateLimiters.js";
 import NodeCache from "node-cache";
@@ -148,7 +150,7 @@ const PLAN_TO_PRICE = {
   everydayYearly: process.env.STRIPE_PRICE_EVERYDAY_YEARLY,
 };
 
-const TRIAL_DAYS = parseInt(process.env.TRIAL_DAYS);
+const TRIAL_DAYS = parseInt(process.env.TRIAL_DAYS, 10);
 
 // Stripe webhook - needs raw body (MUST be before express.json())
 app.post(
@@ -234,24 +236,29 @@ const googleClient = new OAuth2Client(
 );
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // Use STARTTLS
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  requireTLS: true,
+  connectionTimeout: 15000,
+  socketTimeout: 15000,
 });
 
 const cacheKey = `news:today`;
 
 const cacheEN = new NodeCache({
   stdTTL: 300,
-  checkperiod: 600,
+  checkperiod: 280,
   useClones: false,
 });
 
 const cacheNL = new NodeCache({
   stdTTL: 300,
-  checkperiod: 600,
+  checkperiod: 280,
   useClones: false,
 });
 
@@ -296,7 +303,7 @@ app.get("/auth/google/callback", async (req, res) => {
     session = await mongoose.startSession();
 
     try {
-      session.startTransaction();
+      await session.startTransaction();
       const user = await User.findOne({ email: googleEmail }).session(session);
       if (!user) {
         await User.create(
@@ -310,19 +317,9 @@ app.get("/auth/google/callback", async (req, res) => {
           ],
           { session }
         );
-      } else {
-        await User.updateOne(
-          { email: googleEmail },
-          {
-            $set: {
-              name: googleName,
-              authProvider: "google",
-              verified: true,
-              passwordHash: null,
-            },
-          },
-          { session }
-        );
+      } else if (user.authProvider === "header") {
+        await session.abortTransaction();
+        return res.sendStatus(400);
       }
 
       const accessToken = jwt.sign(
@@ -334,7 +331,7 @@ app.get("/auth/google/callback", async (req, res) => {
       const refreshToken = jwt.sign(
         { email: googleEmail },
         process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: "30d" }
+        { expiresIn: "7d" }
       );
 
       await User.updateOne(
@@ -389,7 +386,7 @@ app.get("/auth/google/callback", async (req, res) => {
 app.post("/sign-up", authLimiter, validateSignUp, async (req, res) => {
   const session = await mongoose.startSession();
   try {
-    session.startTransaction();
+    await session.startTransaction();
     const data = req.body;
     const verificationToken = crypto.randomBytes(32).toString("hex");
     const verificationTokenExpiresAt = new Date(
@@ -414,7 +411,7 @@ app.post("/sign-up", authLimiter, validateSignUp, async (req, res) => {
     const refreshToken = jwt.sign(
       { email: data.email },
       process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "30d" }
+      { expiresIn: "7d" }
     );
 
     await User.create(
@@ -547,11 +544,12 @@ app.get("/log-in", async (req, res) => {
   }
 });
 
-app.post("/log-in", authLimiter, async (req, res) => {
+app.post("/log-in", authLimiter, validateEmail, async (req, res) => {
+  // Added validation
   const session = await mongoose.startSession();
 
   try {
-    session.startTransaction();
+    await session.startTransaction();
     const matches = await User.findOne({ email: req.body.email }).session(
       session
     );
@@ -571,7 +569,7 @@ app.post("/log-in", authLimiter, async (req, res) => {
       const refreshToken = jwt.sign(
         { email: matches.email },
         process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: "30d" }
+        { expiresIn: "7d" }
       );
 
       if (matches.refreshTokens.length > 0) {
@@ -631,7 +629,7 @@ app.get("/api/refresh", async (req, res) => {
   }
   const session = await mongoose.startSession();
   try {
-    session.startTransaction();
+    await session.startTransaction();
     const emailSent = jwt.verify(
       incomingRefreshToken,
       process.env.REFRESH_TOKEN_SECRET
@@ -768,11 +766,10 @@ app.get("/api/user-data", specialAuthToken, async (req, res) => {
     let cachedArticlesUpdated = [];
 
     if (userPlan === "free") {
-      if (cachedArticles && cachedArticles.length > 5) {
+      if (cachedArticles && cachedArticles.length > 0) {
+        // Free users only get up to 5 articles
         for (const cachedArticle of cachedArticles) {
-          if (cachedArticlesUpdated.length > 4) {
-            break;
-          }
+          if (cachedArticlesUpdated.length >= 5) break;
           cachedArticlesUpdated.push({
             ...cachedArticle,
             qualityScoreAI: null,
@@ -803,9 +800,11 @@ app.get("/api/user-data", specialAuthToken, async (req, res) => {
       canStartTrial: !user.hasUsedTrial,
       contactEmail: process.env.EMAIL_APP,
       welcome: user.welcome,
+      isDeactivated: user.isDeactivated,
+      deleteAt: user.deleteAt,
     });
   } catch (e) {
-    console.log(e);
+    console.error(e);
     res.sendStatus(500);
   }
 });
@@ -831,79 +830,84 @@ app.post(
   }
 );
 
-app.post("/api/refresh/save-article", specialAuthToken, async (req, res) => {
-  const userEmail = req.user.email;
-  const contentLang = req.user.selectedContentLanguage || "en";
-  const userEmail02 = req.body.email;
-  const ArtId = req.body.artId;
-  const action = req.body.action;
+app.post(
+  "/api/refresh/save-article",
+  specialAuthToken,
+  validateObjectId("artId"),
+  async (req, res) => {
+    const userEmail = req.user.email;
+    const contentLang = req.user.selectedContentLanguage || "en";
+    const userEmail02 = req.body.email;
+    const ArtId = req.body.artId;
+    const action = req.body.action;
 
-  if (userEmail !== userEmail02) {
-    res.clearCookie("jwt");
-    res.clearCookie("jwt_refresh", { path: "/api/refresh" });
-    return res.redirect("/log-in");
-  }
-
-  const session = await mongoose.startSession();
-  try {
-    await session.startTransaction();
-    // 1 = favorite, 2 = unfavorite
-    if (action === 1) {
-      if (req.user.plan === "free" && req.user.savedArticles.length > 2) {
-        await session.abortTransaction();
-        return res.sendStatus(405); // user cannot save more than 3 articles!
-      }
-      let artObj;
-      if (contentLang === "en") {
-        artObj = await ArticleEN.findOne({ _id: ArtId })
-          .lean()
-          .session(session);
-      } else {
-        artObj = await ArticleNL.findOne({ _id: ArtId })
-          .lean()
-          .session(session);
-      }
-
-      if (!artObj) {
-        await session.abortTransaction();
-        return res.sendStatus(404); // No article found
-      }
-      const userSearch = await User.findOne({
-        email: userEmail,
-        "savedArticles._id": ArtId,
-      }).session(session);
-      if (userSearch) {
-        await session.abortTransaction();
-        return res.sendStatus(409); // Article already saved by user
-      }
-
-      await User.updateOne(
-        { email: userEmail },
-        { $push: { savedArticles: artObj } },
-        { session }
-      );
-      await session.commitTransaction();
-      return res.sendStatus(200);
-    } else if (action === 2) {
-      await User.updateOne(
-        { email: userEmail },
-        { $pull: { savedArticles: { _id: ArtId } } },
-        { session }
-      );
-      await session.commitTransaction();
-      return res.sendStatus(200); // All good, action completed
-    } else {
-      await session.abortTransaction();
-      return res.sendStatus(400); // Invalid frontend action
+    if (userEmail !== userEmail02) {
+      res.clearCookie("jwt");
+      res.clearCookie("jwt_refresh", { path: "/api/refresh" });
+      return res.redirect("/log-in");
     }
-  } catch (e) {
-    console.error(e);
-    await session.abortTransaction();
-    res.sendStatus(500); // Unexpected error
-  } finally {
-    await session.endSession();
+
+    const session = await mongoose.startSession();
+    try {
+      await session.startTransaction();
+      // 1 = favorite, 2 = unfavorite
+      if (action === 1) {
+        if (req.user.plan === "free" && req.user.savedArticles.length > 2) {
+          await session.abortTransaction();
+          return res.sendStatus(405); // user cannot save more than 3 articles!
+        }
+        let artObj;
+        if (contentLang === "en") {
+          artObj = await ArticleEN.findOne({ _id: ArtId })
+            .lean()
+            .session(session);
+        } else {
+          artObj = await ArticleNL.findOne({ _id: ArtId })
+            .lean()
+            .session(session);
+        }
+
+        if (!artObj) {
+          await session.abortTransaction();
+          return res.sendStatus(404); // No article found
+        }
+        const userSearch = await User.findOne({
+          email: userEmail,
+          "savedArticles._id": ArtId,
+        }).session(session);
+        if (userSearch) {
+          await session.abortTransaction();
+          return res.sendStatus(409); // Article already saved by user
+        }
+
+        await User.updateOne(
+          { email: userEmail },
+          { $push: { savedArticles: artObj } },
+          { session }
+        );
+        await session.commitTransaction();
+        return res.sendStatus(200);
+      } else if (action === 2) {
+        await User.updateOne(
+          { email: userEmail },
+          { $pull: { savedArticles: { _id: ArtId } } },
+          { session }
+        );
+        await session.commitTransaction();
+        return res.sendStatus(200); // All good, action completed
+      } else {
+        await session.abortTransaction();
+        return res.sendStatus(400); // Invalid frontend action
+      }
+    } catch (e) {
+      console.error(e);
+      await session.abortTransaction();
+      res.sendStatus(500); // Unexpected error
+    } finally {
+      await session.endSession();
+    }
   }
-});
+);
 
 app.get("/api/refresh/load-stars", specialAuthToken, async (req, res) => {
   try {
@@ -929,10 +933,10 @@ app.get("/api/refresh/load-stars", specialAuthToken, async (req, res) => {
   }
 });
 
-app.post("/request-reset", authLimiter, async (req, res) => {
+app.post("/request-reset", authLimiter, validateEmail, async (req, res) => {
   const session = await mongoose.startSession();
   try {
-    session.startTransaction();
+    await session.startTransaction();
     const userObj = await User.findOne({ email: req.body.email }).session(
       session
     );
@@ -968,7 +972,7 @@ app.post("/request-reset", authLimiter, async (req, res) => {
 app.post("/change-pass", authLimiter, validatePass, async (req, res) => {
   const session = await mongoose.startSession();
   try {
-    session.startTransaction();
+    await session.startTransaction();
     const newPassword = req.body.password;
     const tokenUser = req.body.token;
     const userObj = await User.findOne({
@@ -1112,31 +1116,36 @@ app.post(
   }
 );
 
-app.post("/api/refresh/feedback", specialAuthToken, async (req, res) => {
-  const data = req.body;
+app.post(
+  "/api/refresh/feedback",
+  specialAuthToken,
+  validateObjectId("articleId"),
+  async (req, res) => {
+    const data = req.body;
 
-  if (
-    !data.articleId ||
-    !data.type ||
-    (data.type === "other" && !data.details)
-  ) {
-    return res.sendStatus(400);
+    if (
+      !data.articleId ||
+      !data.type ||
+      (data.type === "other" && !data.details)
+    ) {
+      return res.sendStatus(400);
+    }
+
+    const feedbackTicket = await Feedback.create({
+      articleId: data.articleId,
+      articleLink: data.articleLink,
+      type: data.type,
+      details: data.details ? data.details : null,
+      email: data.email,
+    });
+
+    if (feedbackTicket) {
+      res.sendStatus(200);
+    } else {
+      res.sendStatus(500);
+    }
   }
-
-  const feedbackTicket = await Feedback.create({
-    articleId: data.articleId,
-    articleLink: data.articleLink,
-    type: data.type,
-    details: data.details ? data.details : null,
-    email: data.email,
-  });
-
-  if (feedbackTicket) {
-    res.sendStatus(200);
-  } else {
-    res.sendStatus(500);
-  }
-});
+);
 
 app.post(
   "/api/refresh/update-name",
@@ -1163,33 +1172,45 @@ app.delete("/delete-account", specialAuthToken, async (req, res) => {
     return res.sendStatus(401);
   }
 
-  const session = await mongoose.startSession();
   try {
-    await session.startTransaction();
+    const deleteAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000); // 3 days
 
-    const deletedAcc = await User.deleteOne(
+    await sendDeletionWarning(req.user.email, req.user.name, deleteAt);
+
+    await User.updateOne(
       { email: req.user.email },
-      { session }
+      {
+        $set: {
+          deletionRequestedAt: new Date(),
+          deleteAt: deleteAt,
+          isDeactivated: true,
+        },
+      }
     );
-
-    if (deletedAcc.deletedCount === 0) {
-      await session.abortTransaction();
-      return res.sendStatus(403);
-    }
-
-    if (req.user.stripeCustomerId) {
-      await stripe.customers.del(req.user.stripeCustomerId);
-    }
-    res.clearCookie("jwt");
-    res.clearCookie("jwt_refresh", { path: "/api/refresh" });
-    await session.commitTransaction();
     res.sendStatus(200);
   } catch (e) {
-    await session.abortTransaction();
     console.error(e);
     res.sendStatus(403);
-  } finally {
-    await session.endSession();
+  }
+});
+
+app.post("/api/refresh/cancel-deletion", specialAuthToken, async (req, res) => {
+  try {
+    await User.updateOne(
+      { email: req.user.email },
+      {
+        $set: {
+          deletionRequestedAt: null,
+          deleteAt: null,
+          isDeactivated: false,
+        },
+      }
+    );
+
+    res.sendStatus(200);
+  } catch (e) {
+    console.error(e);
+    res.sendStatus(500);
   }
 });
 
@@ -1252,178 +1273,189 @@ app.post("/api/refresh/update-language", specialAuthToken, async (req, res) => {
 });
 
 // Create checkout session for new subscription (Stripe)
-app.post("/api/create-checkout-session", specialAuthToken, async (req, res) => {
-  const session = await mongoose.startSession();
-  const user = req.user;
+app.post(
+  "/api/create-checkout-session",
+  authLimiter,
+  specialAuthToken,
+  async (req, res) => {
+    const session = await mongoose.startSession();
+    const user = req.user;
 
-  try {
-    session.startTransaction();
+    try {
+      await session.startTransaction();
 
-    const { plan, withTrial } = req.body;
+      const { plan, withTrial } = req.body;
 
-    if (!user.verified) {
-      await session.abortTransaction();
-      return res.sendStatus(401);
-    }
+      if (!user.verified) {
+        await session.abortTransaction();
+        return res.sendStatus(401);
+      }
 
-    const priceId = PLAN_TO_PRICE[plan];
-    if (!priceId) {
-      await session.abortTransaction();
-      return res.sendStatus(400);
-    }
+      const priceId = PLAN_TO_PRICE[plan];
+      if (!priceId) {
+        await session.abortTransaction();
+        return res.sendStatus(400);
+      }
 
-    // Check if user already has an active subscription in database
-    if (
-      user.subscription?.status === "active" ||
-      user.subscription?.status === "trialing" ||
-      user.subscription?.status === "past_due"
-    ) {
-      await session.abortTransaction();
-      return res.status(409).json({ error: "already_subscribed" });
-    }
-
-    // Create or retrieve Stripe customer
-    let customerId = user.stripeCustomerId;
-
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        name: user.name,
-        metadata: {
-          userId: user._id.toString(),
-        },
-      });
-      customerId = customer.id;
-    } else {
-      // User has a Stripe customer ID - check Stripe directly for active subscriptions
-      const existingSubscriptions = await stripe.subscriptions.list({
-        customer: customerId,
-        status: "all",
-        limit: 10,
-      });
-
-      const hasActiveSubscription = existingSubscriptions.data.some((sub) =>
-        ["active", "trialing", "past_due", "incomplete"].includes(sub.status)
-      );
-
-      if (hasActiveSubscription) {
-        // Sync the subscription status to database
-        const activeSub = existingSubscriptions.data.find((sub) =>
-          ["active", "trialing", "past_due"].includes(sub.status)
-        );
-        if (activeSub) {
-          // Get current_period_end from the subscription item
-          const currentPeriodEnd = activeSub.items.data[0].current_period_end;
-          await User.updateOne(
-            { email: user.email },
-            {
-              $set: {
-                subscription: {
-                  id: activeSub.id,
-                  status: activeSub.status,
-                  priceId: activeSub.items.data[0].price.id,
-                  currentPeriodEnd: currentPeriodEnd
-                    ? new Date(currentPeriodEnd * 1000)
-                    : null,
-                  cancelAtPeriodEnd: activeSub.cancel_at_period_end,
-                  trialEnd: activeSub.trial_end
-                    ? new Date(activeSub.trial_end * 1000)
-                    : null,
-                },
-                plan: PRICE_TO_PLAN[activeSub.items.data[0].price.id] || "free",
-              },
-            },
-            { session }
-          );
-        }
-
+      // Check if user already has an active subscription in database
+      if (
+        user.subscription?.status === "active" ||
+        user.subscription?.status === "trialing" ||
+        user.subscription?.status === "past_due"
+      ) {
         await session.abortTransaction();
         return res.status(409).json({ error: "already_subscribed" });
       }
-    }
 
-    const canHaveTrial = withTrial && !user.hasUsedTrial;
+      // Create or retrieve Stripe customer
+      let customerId = user.stripeCustomerId;
 
-    const subscriptionData = {
-      metadata: {
-        email: user.email,
-        plan: "everyday",
-      },
-    };
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: user.name,
+          metadata: {
+            userId: user._id.toString(),
+          },
+        });
+        customerId = customer.id;
+      } else {
+        // User has a Stripe customer ID - check Stripe directly for active subscriptions
+        const existingSubscriptions = await stripe.subscriptions.list({
+          customer: customerId,
+          status: "all",
+          limit: 10,
+        });
 
-    if (canHaveTrial) {
-      subscriptionData.trial_period_days = TRIAL_DAYS;
-    }
+        const hasActiveSubscription = existingSubscriptions.data.some((sub) =>
+          ["active", "trialing", "past_due", "incomplete"].includes(sub.status)
+        );
 
-    // Create checkout session
-    const checkoutSession = await stripe.checkout.sessions.create({
-      customer: customerId,
-      payment_method_types: ["card"],
-      line_items: [
+        if (hasActiveSubscription) {
+          // Sync the subscription status to database
+          const activeSub = existingSubscriptions.data.find((sub) =>
+            ["active", "trialing", "past_due"].includes(sub.status)
+          );
+          if (activeSub) {
+            // Get current_period_end from the subscription item
+            const currentPeriodEnd = activeSub.items.data[0].current_period_end;
+            await User.updateOne(
+              { email: user.email },
+              {
+                $set: {
+                  subscription: {
+                    id: activeSub.id,
+                    status: activeSub.status,
+                    priceId: activeSub.items.data[0].price.id,
+                    currentPeriodEnd: currentPeriodEnd
+                      ? new Date(currentPeriodEnd * 1000)
+                      : null,
+                    cancelAtPeriodEnd: activeSub.cancel_at_period_end,
+                    trialEnd: activeSub.trial_end
+                      ? new Date(activeSub.trial_end * 1000)
+                      : null,
+                  },
+                  plan:
+                    PRICE_TO_PLAN[activeSub.items.data[0].price.id] || "free",
+                },
+              },
+              { session }
+            );
+          }
+
+          await session.abortTransaction();
+          return res.status(409).json({ error: "already_subscribed" });
+        }
+      }
+
+      const canHaveTrial = withTrial && !user.hasUsedTrial;
+
+      const subscriptionData = {
+        metadata: {
+          email: user.email,
+          plan: "everyday",
+        },
+      };
+
+      if (canHaveTrial) {
+        subscriptionData.trial_period_days = TRIAL_DAYS;
+      }
+
+      // Create checkout session
+      const checkoutSession = await stripe.checkout.sessions.create({
+        customer: customerId,
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+        mode: "subscription",
+        success_url: `${URL}/content?payment=success`,
+        cancel_url: `${URL}/content?payment=canceled`,
+        metadata: {
+          email: user.email,
+          plan: "everyday",
+          isTrialStart: canHaveTrial ? "true" : "false",
+        },
+        subscription_data: subscriptionData,
+        // Expire the checkout session after 30 minutes
+        expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+      });
+
+      // Save pending checkout info and customer ID
+      await User.updateOne(
+        { email: user.email },
         {
-          price: priceId,
-          quantity: 1,
+          $set: {
+            stripeCustomerId: customerId,
+          },
         },
-      ],
-      mode: "subscription",
-      success_url: `${URL}/content?payment=success`,
-      cancel_url: `${URL}/content?payment=canceled`,
-      metadata: {
-        email: user.email,
-        plan: "everyday",
-        isTrialStart: canHaveTrial ? "true" : "false",
-      },
-      subscription_data: subscriptionData,
-      // Expire the checkout session after 30 minutes
-      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
-    });
+        { session }
+      );
 
-    // Save pending checkout info and customer ID
-    await User.updateOne(
-      { email: user.email },
-      {
-        $set: {
-          stripeCustomerId: customerId,
-        },
-      },
-      { session }
-    );
+      await session.commitTransaction();
 
-    await session.commitTransaction();
-
-    res.json({
-      url: checkoutSession.url,
-      hasTrial: canHaveTrial,
-    });
-  } catch (err) {
-    await session.abortTransaction();
-    console.error("Checkout session error:", err);
-    res.sendStatus(500);
-  } finally {
-    await session.endSession();
+      res.json({
+        url: checkoutSession.url,
+        hasTrial: canHaveTrial,
+      });
+    } catch (err) {
+      await session.abortTransaction();
+      console.error("Checkout session error:", err);
+      res.sendStatus(500);
+    } finally {
+      await session.endSession();
+    }
   }
-});
+);
 
 // Create customer portal session (manage subscription, update payment, cancel)
-app.post("/api/create-portal-session", specialAuthToken, async (req, res) => {
-  try {
-    const user = req.user;
+app.post(
+  "/api/create-portal-session",
+  authLimiter,
+  specialAuthToken,
+  async (req, res) => {
+    try {
+      const user = req.user;
 
-    if (!user.stripeCustomerId) {
-      return res.sendStatus(404); // Frontend: no subscription found
+      if (!user.stripeCustomerId) {
+        return res.sendStatus(404); // Frontend: no subscription found
+      }
+
+      const session = await stripe.billingPortal.sessions.create({
+        customer: user.stripeCustomerId,
+        return_url: `${URL}/content`,
+      });
+
+      res.status(200).json({ url: session.url });
+    } catch (err) {
+      console.error("Portal session error:", err);
+      res.sendStatus(500); // Frontend: Failed to create portal session
     }
-
-    const session = await stripe.billingPortal.sessions.create({
-      customer: user.stripeCustomerId,
-      return_url: `${URL}/content`,
-    });
-
-    res.status(200).json({ url: session.url });
-  } catch (err) {
-    console.error("Portal session error:", err);
-    res.sendStatus(500); // Frontend: Failed to create portal session
   }
-});
+);
 
 // Cancel subscription (at period end)
 app.post("/api/cancel-subscription", specialAuthToken, async (req, res) => {
@@ -1567,10 +1599,284 @@ app.use((req, res) => {
 
 // Functions:
 
+function startDeletionCron() {
+  // Run every hour
+  cron.schedule("0 * * * *", async () => {
+    try {
+      const usersToDelete = await User.find({
+        deleteAt: { $lte: new Date() },
+        isDeactivated: true,
+      })
+        .limit(100)
+        .lean();
+
+      if (usersToDelete.length === 0) {
+        return;
+      }
+
+      for (const user of usersToDelete) {
+        try {
+          // Delete Stripe customer first (cancels subscriptions too)
+          if (user.stripeCustomerId) {
+            try {
+              await stripe.customers.del(user.stripeCustomerId);
+            } catch (stripeErr) {
+              console.error(
+                `Stripe deletion failed for ${user.email}:`,
+                stripeErr.message
+              );
+            }
+          }
+
+          // Delete user from database
+          await User.deleteOne({ _id: user._id });
+
+          console.log(`Deleted account: ${user.email}`);
+        } catch (e) {
+          console.error(`Failed to delete ${user.email}:`, e);
+        }
+      }
+    } catch (e) {
+      console.error("Deletion job error:", e);
+    }
+  });
+}
+
+async function sendDeletionWarning(userEmail, userName, deleteDate) {
+  const loginLink = `${URL}/log-in`;
+  const formattedDate = new Date(deleteDate).toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const mailOptions = {
+    from: `"Header App" <${process.env.EMAIL_APP}>`,
+    to: userEmail,
+    subject: "Your Header account is scheduled for deletion",
+    html: `
+      <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Deletion Warning | Header</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f7fa; font-family: 'Segoe UI', Arial, sans-serif;">
+  
+  <!-- Wrapper -->
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f4f7fa; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        
+        <!-- Main Container -->
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);">
+          
+          <!-- Header with Warning Theme -->
+          <tr>
+            <td style="background-color: #0f172a; padding: 40px 40px; text-align: center; position: relative;">
+              
+              <!-- Logo -->
+              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 24px auto;">
+                <tr>
+                  <td>
+                    <span style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -1px; font-family: 'Segoe UI', Arial, sans-serif;">Header</span>
+                    <span style="font-size: 20px; color: #2563eb; position: relative; top: -8px; margin-left: 2px;"><sup>✦</sup></span>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- Warning Icon -->
+              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 20px auto;">
+                <tr>
+                  <td style="background-color: rgba(239, 68, 68, 0.15); border-radius: 50%; width: 64px; height: 64px; text-align: center; line-height: 64px;">
+                    <span style="font-size: 32px;">⚠️</span>
+                  </td>
+                </tr>
+              </table>
+              
+              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">
+                Your account is scheduled for deletion
+              </h1>
+              <p style="color: rgba(255, 255, 255, 0.7); margin: 12px 0 0 0; font-size: 15px;">
+                Action required if you want to keep your account
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Body -->
+          <tr>
+            <td style="padding: 48px 40px;">
+              
+              <!-- Greeting -->
+              <p style="color: #0f172a; font-size: 17px; margin: 0 0 20px 0; line-height: 1.6;">
+                Hi <strong>${userName}</strong>,
+              </p>
+              
+              <p style="color: #64748b; font-size: 15px; margin: 0 0 24px 0; line-height: 1.7;">
+                We received a request to delete your Header account. Your account and all associated data will be <strong>permanently deleted</strong> on:
+              </p>
+              
+              <!-- Deletion Date Box -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin: 0 0 32px 0;">
+                <tr>
+                  <td style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 20px; text-align: center;">
+                    <p style="color: #991b1b; font-size: 13px; font-weight: 600; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                      Scheduled Deletion Date
+                    </p>
+                    <p style="color: #dc2626; font-size: 20px; font-weight: 700; margin: 0;">
+                      ${formattedDate}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- What will be deleted -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border-radius: 12px; margin-bottom: 32px;">
+                <tr>
+                  <td style="padding: 24px;">
+                    <p style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 16px 0;">
+                      What will be permanently deleted:
+                    </p>
+                    <table role="presentation" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding: 6px 0;">
+                          <span style="color: #dc2626; margin-right: 10px;">✕</span>
+                          <span style="color: #64748b; font-size: 14px;">All your saved articles</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0;">
+                          <span style="color: #dc2626; margin-right: 10px;">✕</span>
+                          <span style="color: #64748b; font-size: 14px;">Your reading preferences and history</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0;">
+                          <span style="color: #dc2626; margin-right: 10px;">✕</span>
+                          <span style="color: #64748b; font-size: 14px;">Active subscriptions (no refunds)</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0;">
+                          <span style="color: #dc2626; margin-right: 10px;">✕</span>
+                          <span style="color: #64748b; font-size: 14px;">Your account and login credentials</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- Changed your mind section -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; margin-bottom: 32px;">
+                <tr>
+                  <td style="padding: 24px;">
+                    <p style="color: #166534; font-size: 15px; font-weight: 600; margin: 0 0 12px 0;">
+                      Changed your mind?
+                    </p>
+                    <p style="color: #15803d; font-size: 14px; margin: 0; line-height: 1.6;">
+                      You can cancel the deletion anytime before the scheduled date. Simply log in to your account and click "Cancel Deletion" on the deletion notice page.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- CTA Button -->
+              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 32px auto;">
+                <tr>
+                  <td align="center" style="background-color: #0f172a; border-radius: 12px;">
+                    <a href="${loginLink}" target="_blank" style="display: inline-block; padding: 16px 48px; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none;">
+                      Log in to cancel deletion →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- Alternative Link -->
+              <p style="color: #94a3b8; font-size: 13px; margin: 0 0 10px 0;">
+                Button not working? Copy and paste this link:
+              </p>
+              <p style="background-color: #f1f5f9; padding: 12px 14px; border-radius: 8px; word-break: break-all; margin: 0 0 32px 0;">
+                <a href="${loginLink}" style="color: #2563eb; font-size: 12px; text-decoration: none;">
+                  ${loginLink}
+                </a>
+              </p>
+              
+              <!-- Divider -->
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;">
+              
+              <!-- Security Notice -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="padding: 0;">
+                    <p style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.6;">
+                      <strong style="color: #64748b;">Didn't request this?</strong><br>
+                      If you didn't request account deletion, please log in immediately and cancel the deletion. Then change your password to secure your account. If you need help, contact us at <a href="mailto:${process.env.EMAIL_APP}" style="color: #2563eb; text-decoration: none;">${process.env.EMAIL_APP}</a>.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #0f172a; padding: 32px 40px; text-align: center;">
+              
+              <!-- Logo in footer -->
+              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto 16px auto;">
+                <tr>
+                  <td>
+                    <span style="font-size: 18px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; font-family: 'Segoe UI', Arial, sans-serif;">Header</span>
+                    <span style="font-size: 14px; color: #2563eb; position: relative; top: -4px; margin-left: 1px;"><sup>✦</sup></span>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="color: rgba(255, 255, 255, 0.5); font-size: 13px; margin: 0 0 8px 0; line-height: 1.6;">
+                AI-powered news summaries for busy professionals and casuals
+              </p>
+              
+              <p style="color: rgba(255, 255, 255, 0.3); font-size: 11px; margin: 16px 0 0 0;">
+                © 2025 Header News. All rights reserved.
+              </p>
+              
+            </td>
+          </tr>
+          
+        </table>
+        
+        <!-- Bottom note -->
+        <p style="color: #94a3b8; font-size: 11px; margin: 20px 0 0 0; text-align: center;">
+          This is an automated email regarding your account deletion request.
+        </p>
+        
+      </td>
+    </tr>
+  </table>
+  
+</body>
+</html>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (e) {
+    console.error("Deletion warning email failed:", e);
+    throw new Error();
+  }
+}
+
 async function handleSubscriptionCreated(subscription) {
   const session = await mongoose.startSession();
   try {
-    session.startTransaction();
+    await session.startTransaction();
 
     const customerId = subscription.customer;
     const freshSubscription = await stripe.subscriptions.retrieve(
@@ -1620,7 +1926,7 @@ async function handleSubscriptionCreated(subscription) {
 async function handleCheckoutComplete(checkoutSession) {
   const session = await mongoose.startSession();
   try {
-    session.startTransaction();
+    await session.startTransaction();
 
     const customerId = checkoutSession.customer;
     const subscriptionId = checkoutSession.subscription;
@@ -1677,7 +1983,7 @@ async function handleCheckoutComplete(checkoutSession) {
 async function handleSubscriptionUpdate(subscription) {
   const session = await mongoose.startSession();
   try {
-    session.startTransaction();
+    await session.startTransaction();
 
     const customerId = subscription.customer;
     const freshSubscription = await stripe.subscriptions.retrieve(
@@ -1730,7 +2036,7 @@ async function handleSubscriptionUpdate(subscription) {
 async function handleSubscriptionCanceled(subscription) {
   const session = await mongoose.startSession();
   try {
-    session.startTransaction();
+    await session.startTransaction();
 
     const customerId = subscription.customer;
 
@@ -1764,7 +2070,7 @@ async function handleSubscriptionCanceled(subscription) {
 async function handleTrialEnding(subscription) {
   const session = await mongoose.startSession();
   try {
-    session.startTransaction();
+    await session.startTransaction();
 
     const customerId = subscription.customer;
     const user = await User.findOne({ stripeCustomerId: customerId }).session(
@@ -1787,7 +2093,7 @@ async function handleTrialEnding(subscription) {
 async function handlePaymentSucceeded(invoice) {
   const session = await mongoose.startSession();
   try {
-    session.startTransaction();
+    await session.startTransaction();
 
     const customerId = invoice.customer;
     const subscriptionId = invoice.subscription;
@@ -1899,7 +2205,7 @@ async function sendTrialEndingEmail(userEmail, userName, trialEndTimestamp) {
 async function handlePaymentFailed(invoice) {
   const session = await mongoose.startSession();
   try {
-    session.startTransaction();
+    await session.startTransaction();
 
     const customerId = invoice.customer;
 
@@ -1928,6 +2234,8 @@ async function startServer() {
   const server = app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
+
+  startDeletionCron();
 
   // Graceful shutdown
   const shutdown = async (signal) => {
@@ -1983,7 +2291,7 @@ async function specialAuthToken(req, res, next) {
       );
       const session = await mongoose.startSession();
       try {
-        session.startTransaction();
+        await session.startTransaction();
 
         const userObj = await User.findOne({
           refreshTokens: {

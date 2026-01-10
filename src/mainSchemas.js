@@ -70,9 +70,14 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
     welcome: { type: Boolean, default: true },
+    deletionRequestedAt: { type: Date, default: null },
+    deleteAt: { type: Date, default: null },
+    isDeactivated: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
+
+userSchema.index({ deleteAt: 1, isDeactivated: 1 });
 
 const articleFeedbackSchema = new mongoose.Schema({
   articleId: String,

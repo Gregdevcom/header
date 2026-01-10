@@ -1,4 +1,5 @@
 import { z } from "zod";
+import mongoose from "mongoose";
 
 export const signUpSchema = z.object({
   email: z
@@ -83,6 +84,24 @@ export const validateSignUp = (req, res, next) => {
 
   req.body = result.data;
   next();
+};
+
+export const validateObjectId = (field) => {
+  return (req, res, next) => {
+    const value = req.body[field];
+
+    if (
+      !value ||
+      typeof value !== "string" ||
+      !mongoose.Types.ObjectId.isValid(value)
+    ) {
+      return res.sendStatus(400);
+    }
+
+    // Sanitize - ensures it's a plain string
+    req.body[field] = String(value);
+    next();
+  };
 };
 
 export const validatePass = (req, res, next) => {
