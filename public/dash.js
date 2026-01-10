@@ -3151,7 +3151,7 @@ saveBtn.forEach((btn, index) => {
   if (index === 0) {
     firstBtn = btn;
     document.addEventListener("keydown", (e) => {
-      if (e.key === "f") {
+      if (e.key === "f" && isFeedOpen) {
         firstBtn.click();
       }
     });
