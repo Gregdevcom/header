@@ -1215,9 +1215,6 @@ app.post("/api/refresh/cancel-deletion", specialAuthToken, async (req, res) => {
 });
 
 app.post("/api/refresh/update-language", specialAuthToken, async (req, res) => {
-  if (req.user.plan === "free") {
-    return res.sendStatus(409);
-  }
   const currentLang = req.user.selectedContentLanguage
     ? req.user.selectedContentLanguage
     : "en";
@@ -1254,6 +1251,9 @@ app.post("/api/refresh/update-language", specialAuthToken, async (req, res) => {
         res.sendStatus(200);
       }
     } else if (req.body.language === "nl") {
+      if (req.user.plan === "free") {
+        return res.sendStatus(409);
+      }
       if (currentLang === "nl") {
         return res.sendStatus(400);
       } else if (currentLang === "en") {
