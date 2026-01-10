@@ -4512,116 +4512,136 @@ li {
 #active-card {
   touch-action: pan-y pinch-zoom;
   user-select: none;
-  cursor: grab;
   will-change: transform;
   transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
 }
 
 #active-card.dragging {
   cursor: grabbing;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 }
 
 /* Card container needs relative positioning */
 #view-feed {
   position: relative;
-  overflow: hidden;
+  /*
+  overflow: hidden; */
 }
 
-/* ==========================================
-   SWIPE INDICATORS
-   ========================================== */
+/* =======================================================
+   ELEGANT & NEUTRAL GLOSSY SWIPE INDICATOR STYLES
+   ======================================================= */
 
 .swipe-indicator {
   position: absolute;
+  top: 50%;
+  transform: translateY(-50%) scale(0.9);
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition: opacity 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+    transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
   z-index: 100;
 }
 
+/* Base Glass Style for the Indicator Box */
 .swipe-indicator .indicator-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 16px 24px;
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
+  gap: 8px;
+  padding: 20px 28px;
+  border-radius: 24px; /* Softer corners */
+
+  /* The Frosted Glass Effect */
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  /* The Subtle Glowing Edge (created with a gradient border) */
+  border: 1px solid transparent;
+  background-clip: padding-box, border-box;
+  background-origin: padding-box, border-box;
+  background-image: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.15),
+      rgba(255, 255, 255, 0.15)
+    ),
+    /* The fill */
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.4),
+        rgba(255, 255, 255, 0.1)
+      ); /* The border */
+
+  /* The Soft, Deep Shadow */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+
+  /* Text & Icon Styling for Readability */
+  color: #ffffff;
   font-weight: 600;
   font-size: 14px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+  /* Smooth transitions for all properties */
+  transition: all 0.2s ease-in-out;
 }
 
-.swipe-indicator i {
-  font-size: 28px;
+.swipe-indicator .indicator-content i {
+  font-size: 32px;
+  /* A very faint glow for the icon initially */
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
-/* Left indicator (Previous) */
+/* --- Positioning --- */
+
 .swipe-indicator-left {
   left: 20px;
-  top: 50%;
-  transform: translateY(-50%) translateX(-20px);
 }
-
-.swipe-indicator-left.active {
-  transform: translateY(-50%) translateX(0);
-}
-
-.swipe-indicator-left .indicator-content {
-  background: rgba(99, 102, 241, 0.9);
-  color: white;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
-}
-
-/* Right indicator (Next) */
 .swipe-indicator-right {
   right: 20px;
-  top: 50%;
-  transform: translateY(-50%) translateX(20px);
 }
-
-.swipe-indicator-right.active {
-  transform: translateY(-50%) translateX(0);
-}
-
-.swipe-indicator-right .indicator-content {
-  background: rgba(16, 185, 129, 0.9);
-  color: white;
-  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
-}
-
-/* Up indicator (Read Full) */
 .swipe-indicator-up {
   top: 20px;
   left: 50%;
-  transform: translateX(-50%) translateY(-20px);
+  transform: translateX(-50%) translateY(-50%) scale(0.9);
 }
 
+/* --- Active State (when swiping) --- */
+
+.swipe-indicator.active {
+  transform: translateY(-50%) scale(1);
+  opacity: 1;
+}
 .swipe-indicator-up.active {
-  transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%) translateY(-50%) scale(1);
 }
 
-.swipe-indicator-up .indicator-content {
-  background: rgba(245, 158, 11, 0.9);
-  color: white;
-  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
-}
+/* --- Triggered State (when swipe threshold is met) --- */
+/* This is where the magic happens! */
 
-/* Triggered state - when threshold is reached */
 .swipe-indicator.triggered .indicator-content {
-  transform: scale(1.1);
+  /* Pop effect */
+  transform: scale(1.05);
+
+  /* Brighter, "lit up" glass fill */
+  background-color: rgba(255, 255, 255, 0.25);
+
+  /* The border becomes pure, bright white */
+  background-image: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.25),
+      rgba(255, 255, 255, 0.25)
+    ),
+    linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.3));
+
+  /* The shadow becomes a soft white "bloom" effect */
+  box-shadow: 0 0 50px rgba(255, 255, 255, 0.2),
+    0 0 20px rgba(255, 255, 255, 0.15);
 }
 
-.swipe-indicator-left.triggered .indicator-content {
-  background: rgba(79, 70, 229, 1);
-}
-
-.swipe-indicator-right.triggered .indicator-content {
-  background: rgba(5, 150, 105, 1);
-}
-
-.swipe-indicator-up.triggered .indicator-content {
-  background: rgba(217, 119, 6, 1);
+.swipe-indicator.triggered .indicator-content i {
+  /* Make the icon shine brightly */
+  color: #fff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 8px rgba(255, 255, 255, 1);
 }
 
 /* ==========================================

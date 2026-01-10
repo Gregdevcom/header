@@ -1259,7 +1259,6 @@ class SwipeCard {
     indicatorLeft.innerHTML = `
       <div class="indicator-content">
         <i class="ph ph-arrow-right"></i>
-        <span>Next</span>
       </div>
     `;
 
@@ -1269,7 +1268,6 @@ class SwipeCard {
     indicatorRight.innerHTML = `
       <div class="indicator-content">
         <i class="ph ph-arrow-left"></i>
-        <span>Previous</span>
       </div>
     `;
 
@@ -1278,7 +1276,7 @@ class SwipeCard {
     indicatorUp.innerHTML = `
       <div class="indicator-content">
         <i class="ph ph-article"></i>
-        <span>Read Full</span>
+        <span>Full View</span>
       </div>
     `;
 
