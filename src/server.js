@@ -1111,6 +1111,10 @@ app.post("/api/refresh/cancel-deletion", specialAuthToken, async (req, res) => {
 
 // Static routes:
 
+app.get("/", (req, res) => {
+  res.redirect("/content");
+});
+
 app.get("/resend-verification", (req, res) => {
   res.sendFile(
     path.join(__dirname, "..", "public", "resend-verification.html")
