@@ -87,19 +87,6 @@ export const validateSignUp = (req, res, next) => {
   next();
 };
 
-export const validateObjectId = (field) => {
-  return (req, res, next) => {
-    const value = req.body[field];
-
-    if (!value || typeof value !== "string" || !uuidValidate(value)) {
-      return res.sendStatus(400);
-    }
-
-    req.body[field] = String(value);
-    next();
-  };
-};
-
 export const validatePass = (req, res, next) => {
   const result = passwordSchema.safeParse(req.body);
 

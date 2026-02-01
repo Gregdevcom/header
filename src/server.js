@@ -11,22 +11,14 @@ import nodemailer from "nodemailer";
 import helmet from "helmet";
 import crypto from "crypto";
 import mongoose from "mongoose";
-import Stripe from "stripe";
 import cron from "node-cron";
-import {
-  ArticleEN,
-  ArchiveEN,
-  ArticleNL,
-  ArchiveNL,
-  User,
-  Feedback,
-} from "./mainSchemas.js";
+import fs from "fs";
+import { User, Feedback } from "./mainSchemas.js";
 import {
   validateSignUp,
   validatePass,
   validateName,
   validateEmail,
-  validateObjectId,
 } from "./validators.js";
 import { generalLimiter, authLimiter } from "./rateLimiters.js";
 import NodeCache from "node-cache";
@@ -44,18 +36,20 @@ const required = [
   "GOOGLE_REDIRECT_URI",
   "EMAIL_USER",
   "EMAIL_PASS",
-  "STRIPE_SECRET",
-  "STRIPE_PUBLIC",
-  "STRIPE_WEBHOOKS_LOCAL",
-  "STRIPE_PRICE_EVERYDAY_MONTHLY",
-  "STRIPE_PRICE_EVERYDAY_YEARLY",
-  "TRIAL_DAYS",
 ];
+
+const privateKeyPem = fs.readFileSync("./jwt_es256_private.pem", "utf8");
+const publicKeyPem = fs.readFileSync("./jwt_es256_public.pem", "utf8");
 
 const missing = required.filter((key) => !process.env[key]);
 
 if (missing.length > 0) {
   console.error(`Missing required env vars: ${missing.join(", ")}`);
+  process.exit(1);
+}
+
+if (!privateKeyPem || !publicKeyPem) {
+  console.error(`Missing required Pem keys.`);
   process.exit(1);
 }
 
@@ -84,7 +78,6 @@ app.use(
               defaultSrc: ["'self'"],
               scriptSrc: [
                 "'self'",
-                "https://js.stripe.com",
                 "https://maps.googleapis.com",
                 "'unsafe-inline'",
                 "https://unpkg.com",
@@ -97,13 +90,7 @@ app.use(
                 "https://fonts.googleapis.com",
                 "https://cdn.jsdelivr.net",
               ],
-              imgSrc: [
-                "'self'",
-                "data:",
-                "https:",
-                "https://*.stripe.com",
-                "https://cdn.jsdelivr.net",
-              ],
+              imgSrc: ["'self'", "data:", "https:", "https://cdn.jsdelivr.net"],
               fontSrc: [
                 "'self'",
                 "https://fonts.gstatic.com",
@@ -114,15 +101,10 @@ app.use(
               ],
               connectSrc: [
                 "'self'",
-                "https://api.stripe.com",
                 "https://fonts.googleapis.com",
                 "https://fonts.gstatic.com",
               ],
-              frameSrc: [
-                "'self'",
-                "https://js.stripe.com",
-                "https://hooks.stripe.com",
-              ],
+              frameSrc: ["'self'"],
               objectSrc: ["'none'"],
               upgradeInsecureRequests: [],
             },
@@ -136,92 +118,6 @@ app.use(
 app.use(express.static(path.join(__dirname, "..", "public")));
 
 app.use(express.urlencoded({ extended: true }));
-
-const stripe = new Stripe(process.env.STRIPE_SECRET);
-
-// Price ID mapping
-const PRICE_TO_PLAN = {
-  [process.env.STRIPE_PRICE_EVERYDAY_MONTHLY]: "everyday",
-  [process.env.STRIPE_PRICE_EVERYDAY_YEARLY]: "everyday",
-};
-
-const PLAN_TO_PRICE = {
-  everydayMonthly: process.env.STRIPE_PRICE_EVERYDAY_MONTHLY,
-  everydayYearly: process.env.STRIPE_PRICE_EVERYDAY_YEARLY,
-};
-
-const TRIAL_DAYS = parseInt(process.env.TRIAL_DAYS, 10);
-
-// Stripe webhook - needs raw body (MUST be before express.json())
-app.post(
-  "/webhook/stripe",
-  express.raw({ type: "application/json" }),
-  async (req, res) => {
-    const sig = req.headers["stripe-signature"];
-    let event;
-
-    try {
-      event = stripe.webhooks.constructEvent(
-        req.body,
-        sig,
-        process.env.STRIPE_WEBHOOKS_LOCAL
-      );
-    } catch (err) {
-      console.error("Webhook signature verification failed:", err.message);
-      return res.sendStatus(400);
-    }
-    res.sendStatus(200);
-    try {
-      switch (event.type) {
-        case "checkout.session.completed": {
-          const session = event.data.object;
-          await handleCheckoutComplete(session);
-          break;
-        }
-
-        case "customer.subscription.created": {
-          const subscription = event.data.object;
-          await handleSubscriptionCreated(subscription);
-          break;
-        }
-
-        case "customer.subscription.updated": {
-          const subscription = event.data.object;
-          await handleSubscriptionUpdate(subscription);
-          break;
-        }
-
-        case "customer.subscription.deleted": {
-          const subscription = event.data.object;
-          await handleSubscriptionCanceled(subscription);
-          break;
-        }
-
-        case "customer.subscription.trial_will_end": {
-          // Fires 3 days before trial ends
-          const subscription = event.data.object;
-          await handleTrialEnding(subscription);
-          break;
-        }
-
-        case "invoice.payment_failed": {
-          const invoice = event.data.object;
-          await handlePaymentFailed(invoice);
-          break;
-        }
-
-        case "invoice.paid":
-        case "invoice.payment_succeeded": {
-          const invoice = event.data.object;
-          await handlePaymentSucceeded(invoice);
-          break;
-        }
-      }
-    } catch (err) {
-      console.error("Webhook handler error:", err);
-    }
-  }
-);
 
 app.use(express.json());
 
@@ -377,7 +273,7 @@ app.get("/auth/google/callback", async (req, res) => {
     }
   } catch (err) {
     console.error(err);
-    res.redirect("/log-in?error=google_failed"); // Add a warning for frontend for this>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    res.redirect("/log-in?error=google_failed"); // Fix the warning for frontend for this>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   } finally {
     if (session) await session.endSession();
   }
@@ -736,72 +632,17 @@ app.get("/api/refresh/logout", async (req, res) => {
 app.get("/api/user-data", specialAuthToken, async (req, res) => {
   try {
     const user = req.user;
-    const contentLang = user.selectedContentLanguage || "en";
-    const userPlan = user.plan;
-    let cachedArticles;
-    let articlesDB;
-    if (contentLang === "en") {
-      cachedArticles = cacheEN.get(cacheKey);
-      if (!cachedArticles) {
-        articlesDB = await ArticleEN.find({}).lean();
-        if (articlesDB) {
-          cachedArticles = articlesDB;
-          cacheEN.set(cacheKey, cachedArticles);
-        } else {
-          cachedArticles = null;
-        }
-      }
-    } else {
-      cachedArticles = cacheNL.get(cacheKey);
-      if (!cachedArticles) {
-        articlesDB = await ArticleNL.find({}).lean();
-        if (articlesDB) {
-          cachedArticles = articlesDB;
-          cacheNL.set(cacheKey, cachedArticles);
-        } else {
-          cachedArticles = null;
-        }
-      }
-    }
-    let cachedArticlesUpdated = [];
-
-    if (userPlan === "free") {
-      if (cachedArticles && cachedArticles.length > 0) {
-        // Free users only get up to 5 articles
-        for (const cachedArticle of cachedArticles) {
-          if (cachedArticlesUpdated.length >= 5) break;
-          cachedArticlesUpdated.push({
-            ...cachedArticle,
-            qualityScoreAI: null,
-            biasScoreAI: null,
-          });
-        }
-      }
-    }
     res.json({
       email: user.email,
       name: user.name,
       authProvider: user.authProvider,
       verified: user.verified,
-      articles: user.plan === "free" ? cachedArticlesUpdated : cachedArticles,
-      lang: contentLang,
-      secretInfo: user.plan, // User's plan
-      subscription: user.subscription
-        ? {
-            // User's subscription info
-            status: user.subscription.status,
-            currentPeriodEnd: user.subscription.currentPeriodEnd,
-            cancelAtPeriodEnd: user.subscription.cancelAtPeriodEnd,
-            trialEnd: user.subscription.trialEnd,
-            priceId: user.subscription.priceId,
-            isTrialing: user.subscription.status === "trialing",
-          }
-        : null,
-      canStartTrial: !user.hasUsedTrial,
       contactEmail: process.env.EMAIL_APP,
       welcome: user.welcome,
       isDeactivated: user.isDeactivated,
       deleteAt: user.deleteAt,
+      deviceId: user.deviceId || null,
+      pairedAt: user.pairedAt || null,
     });
   } catch (e) {
     console.error(e);
@@ -830,106 +671,173 @@ app.post(
   }
 );
 
+// Request a new pair token (for first-time pairing)
 app.post(
-  "/api/refresh/save-article",
+  "/request-pair-token",
+  authLimiter,
   specialAuthToken,
-  validateObjectId("artId"),
   async (req, res) => {
-    const userEmail = req.user.email;
-    const contentLang = req.user.selectedContentLanguage || "en";
-    const userEmail02 = req.body.email;
-    const ArtId = req.body.artId;
-    const action = parseInt(req.body.action, 10);
-
-    if (userEmail !== userEmail02) {
-      res.clearCookie("jwt");
-      res.clearCookie("jwt_refresh", { path: "/api/refresh" });
-      return res.redirect("/log-in");
-    }
-
-    const session = await mongoose.startSession();
     try {
-      await session.startTransaction();
-      // 1 = favorite, 2 = unfavorite
-      if (action === 1) {
-        if (req.user.plan === "free" && req.user.savedArticles.length >= 3) {
-          await session.abortTransaction();
-          return res.sendStatus(405); // user cannot save more than 3 articles!
-        }
-        let artObj;
-        if (contentLang === "en") {
-          artObj = await ArticleEN.findOne({ _id: ArtId })
-            .lean()
-            .session(session);
-        } else {
-          artObj = await ArticleNL.findOne({ _id: ArtId })
-            .lean()
-            .session(session);
-        }
+      const email = req.user.email;
+      const deviceId = req.body.deviceId; // Note: camelCase to match frontend
 
-        if (!artObj) {
-          await session.abortTransaction();
-          return res.sendStatus(404); // No article found
-        }
-        const userSearch = await User.findOne({
-          email: userEmail,
-          "savedArticles._id": ArtId,
-        }).session(session);
-        if (userSearch) {
-          await session.abortTransaction();
-          return res.sendStatus(409); // Article already saved by user
-        }
-
-        await User.updateOne(
-          { email: userEmail },
-          { $push: { savedArticles: artObj } },
-          { session }
-        );
-        await session.commitTransaction();
-        return res.sendStatus(200);
-      } else if (action === 2) {
-        await User.updateOne(
-          { email: userEmail },
-          { $pull: { savedArticles: { _id: ArtId } } },
-          { session }
-        );
-        await session.commitTransaction();
-        return res.sendStatus(200); // All good, action completed
-      } else {
-        await session.abortTransaction();
-        return res.sendStatus(400); // Invalid frontend action
+      if (!deviceId) {
+        return res.status(400).json({ error: "deviceId is required" });
       }
+
+      // Check if user already has a paired device
+      if (req.user.deviceId && req.user.deviceId !== deviceId) {
+        return res.status(400).json({
+          error: "already_paired",
+          message: "You already have a paired device. Unpair it first.",
+        });
+      }
+
+      // Check if this device is already paired to another user
+      const existingPairing = await User.findOne({
+        deviceId: deviceId,
+        email: { $ne: email },
+      });
+
+      if (existingPairing) {
+        return res.status(400).json({
+          error: "device_registered",
+          message: "This device is already registered to another account.",
+        });
+      }
+
+      // Create the ES256 signed JWT token
+      const pairToken = jwt.sign(
+        {
+          email: email,
+          deviceId: deviceId,
+          type: "pair",
+        },
+        privateKeyPem,
+        { algorithm: "ES256" }
+      );
+
+      // Store the token temporarily (will be confirmed after ESP32 accepts it)
+      await User.updateOne(
+        { email: email },
+        {
+          $set: {
+            pendingDeviceId: deviceId,
+            pendingPairToken: pairToken,
+            pendingPairAt: new Date(),
+          },
+        }
+      );
+
+      res.status(200).json({ pair_token: pairToken });
     } catch (e) {
-      console.error(e);
-      await session.abortTransaction();
-      res.sendStatus(500); // Unexpected error
-    } finally {
-      await session.endSession();
+      console.error("Request pair token error:", e);
+      res.sendStatus(500);
     }
   }
 );
 
-app.get("/api/refresh/load-stars", specialAuthToken, async (req, res) => {
+// Confirm pairing (called after ESP32 accepts the token)
+app.post("/confirm-pair", authLimiter, specialAuthToken, async (req, res) => {
   try {
-    if (req.user.savedArticles.length === 0) {
-      return res.sendStatus(404);
+    const email = req.user.email;
+    const deviceId = req.body.deviceId;
+
+    if (!deviceId) {
+      return res.status(400).json({ error: "deviceId is required" });
     }
-    if (req.user.plan !== "free") {
-      return res.status(200).json({ savedArticles: req.user.savedArticles });
-    } else {
-      let savedArticleArray = [];
-      for (const article of req.user.savedArticles) {
-        savedArticleArray.push({
-          ...article.toObject(), // Convert mongoose doc to plain object
-          biasScoreAI: null,
-          qualityScoreAI: null,
-        });
+
+    // Verify the pending pairing matches
+    if (req.user.pendingDeviceId !== deviceId) {
+      return res
+        .status(400)
+        .json({ error: "No pending pairing for this device" });
+    }
+
+    // Confirm the pairing
+    await User.updateOne(
+      { email: email },
+      {
+        $set: {
+          deviceId: deviceId,
+          pairToken: req.user.pendingPairToken,
+          pairedAt: new Date(),
+          isCalibrated: false,
+        },
+        $unset: {
+          pendingDeviceId: "",
+          pendingPairToken: "",
+          pendingPairAt: "",
+        },
       }
-      res.status(200).json({ savedArticles: savedArticleArray });
-    }
+    );
+
+    res.sendStatus(200);
   } catch (e) {
-    console.error(e);
-    return res.sendStatus(500);
+    console.error("Confirm pair error:", e);
+    res.sendStatus(500);
+  }
+});
+
+// Unpair device
+app.post("/unpair-device", authLimiter, specialAuthToken, async (req, res) => {
+  try {
+    await User.updateOne(
+      { email: req.user.email },
+      {
+        $unset: {
+          deviceId: "",
+          pairToken: "",
+          pairedAt: "",
+          isCalibrated: "",
+          pendingDeviceId: "",
+          pendingPairToken: "",
+          pendingPairAt: "",
+        },
+      }
+    );
+
+    res.sendStatus(200);
+  } catch (e) {
+    console.error("Unpair device error:", e);
+    res.sendStatus(500);
+  }
+});
+
+// Get stored pair token (for reconnection)
+app.get("/get-pair-token", specialAuthToken, async (req, res) => {
+  try {
+    if (!req.user.pairToken || !req.user.deviceId) {
+      return res.status(404).json({ error: "No paired device" });
+    }
+
+    // Optionally verify the token is still valid
+    try {
+      jwt.verify(req.user.pairToken, publicKeyPem, { algorithms: ["ES256"] });
+    } catch (tokenError) {
+      // Token expired, generate a new one
+      const newPairToken = jwt.sign(
+        {
+          email: req.user.email,
+          deviceId: req.user.deviceId,
+          type: "pair",
+        },
+        privateKeyPem,
+        { algorithm: "ES256" }
+      );
+
+      await User.updateOne(
+        { email: req.user.email },
+        { $set: { pairToken: newPairToken } }
+      );
+
+      return res.status(200).json({ pair_token: newPairToken });
+    }
+
+    res.status(200).json({ pair_token: req.user.pairToken });
+  } catch (e) {
+    console.error("Get pair token error:", e);
+    res.sendStatus(500);
   }
 });
 
@@ -1123,17 +1031,11 @@ app.post(
   async (req, res) => {
     const data = req.body;
 
-    if (
-      !data.articleId ||
-      !data.type ||
-      (data.type === "other" && !data.details)
-    ) {
+    if (!data.type || (data.type === "other" && !data.details)) {
       return res.sendStatus(400);
     }
 
     const feedbackTicket = await Feedback.create({
-      articleId: data.articleId,
-      articleLink: data.articleLink,
       type: data.type,
       details: data.details ? data.details : null,
       email: data.email,
@@ -1171,7 +1073,6 @@ app.delete("/delete-account", specialAuthToken, async (req, res) => {
   if (!req.user.verified) {
     return res.sendStatus(401);
   }
-
   try {
     const deleteAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000); // 3 days
 
@@ -1211,330 +1112,6 @@ app.post("/api/refresh/cancel-deletion", specialAuthToken, async (req, res) => {
   } catch (e) {
     console.error(e);
     res.sendStatus(500);
-  }
-});
-
-app.post("/api/refresh/update-language", specialAuthToken, async (req, res) => {
-  const currentLang = req.user.selectedContentLanguage
-    ? req.user.selectedContentLanguage
-    : "en";
-  let isAllowed = true;
-  if (req.user.selectedContentLanguageSetAt) {
-    const originalDate = new Date(req.user.selectedContentLanguageSetAt);
-    if (new Date(originalDate.getTime() + 60 * 60 * 1000) > new Date()) {
-      isAllowed = false;
-    }
-  }
-
-  if (!isAllowed) {
-    return res.sendStatus(503);
-  }
-
-  if (!["en", "nl"].includes(req.body.language)) {
-    return res.sendStatus(400);
-  }
-
-  try {
-    if (req.body.language === "en") {
-      if (currentLang === "en") {
-        return res.sendStatus(400);
-      } else if (currentLang === "nl") {
-        await User.updateOne(
-          { email: req.user.email },
-          {
-            $set: {
-              selectedContentLanguage: "en",
-              selectedContentLanguageSetAt: new Date(),
-            },
-          }
-        );
-        res.sendStatus(200);
-      }
-    } else if (req.body.language === "nl") {
-      if (req.user.plan === "free") {
-        return res.sendStatus(409);
-      }
-      if (currentLang === "nl") {
-        return res.sendStatus(400);
-      } else if (currentLang === "en") {
-        await User.updateOne(
-          { email: req.user.email },
-          {
-            $set: {
-              selectedContentLanguage: "nl",
-              selectedContentLanguageSetAt: new Date(),
-            },
-          }
-        );
-        res.sendStatus(200);
-      }
-    } else {
-      throw new Error();
-    }
-  } catch (e) {
-    console.error(e);
-    res.sendStatus(500);
-  }
-});
-
-// Create checkout session for new subscription (Stripe)
-app.post(
-  "/api/create-checkout-session",
-  authLimiter,
-  specialAuthToken,
-  async (req, res) => {
-    const session = await mongoose.startSession();
-    const user = req.user;
-
-    try {
-      await session.startTransaction();
-
-      const { plan, withTrial } = req.body;
-
-      if (!user.verified) {
-        await session.abortTransaction();
-        return res.sendStatus(401);
-      }
-
-      const priceId = PLAN_TO_PRICE[plan];
-      if (!priceId) {
-        await session.abortTransaction();
-        return res.sendStatus(400);
-      }
-
-      // Check if user already has an active subscription in database
-      if (
-        user.plan !== "free" ||
-        user.subscription?.status === "active" ||
-        user.subscription?.status === "trialing" ||
-        user.subscription?.status === "past_due"
-      ) {
-        await session.abortTransaction();
-        return res.status(409).json({ error: "already_subscribed" });
-      }
-
-      // Create or retrieve Stripe customer
-      let customerId = user.stripeCustomerId;
-
-      if (!customerId) {
-        const customer = await stripe.customers.create({
-          email: user.email,
-          name: user.name,
-          metadata: {
-            userId: user._id.toString(),
-          },
-        });
-        customerId = customer.id;
-      } else {
-        // User has a Stripe customer ID - check Stripe directly for active subscriptions
-        const existingSubscriptions = await stripe.subscriptions.list({
-          customer: customerId,
-          status: "all",
-          limit: 10,
-        });
-
-        const hasActiveSubscription = existingSubscriptions.data.some((sub) =>
-          ["active", "trialing", "past_due", "incomplete"].includes(sub.status)
-        );
-
-        if (hasActiveSubscription) {
-          // Sync the subscription status to database
-          const activeSub = existingSubscriptions.data.find((sub) =>
-            ["active", "trialing", "past_due"].includes(sub.status)
-          );
-          if (activeSub) {
-            // Get current_period_end from the subscription item
-            const currentPeriodEnd = activeSub.items.data[0].current_period_end;
-            await User.updateOne(
-              { email: user.email },
-              {
-                $set: {
-                  subscription: {
-                    id: activeSub.id,
-                    status: activeSub.status,
-                    priceId: activeSub.items.data[0].price.id,
-                    currentPeriodEnd: currentPeriodEnd
-                      ? new Date(currentPeriodEnd * 1000)
-                      : null,
-                    cancelAtPeriodEnd: activeSub.cancel_at_period_end,
-                    trialEnd: activeSub.trial_end
-                      ? new Date(activeSub.trial_end * 1000)
-                      : null,
-                  },
-                  plan:
-                    PRICE_TO_PLAN[activeSub.items.data[0].price.id] || "free",
-                },
-              },
-              { session }
-            );
-          }
-
-          await session.abortTransaction();
-          return res.status(409).json({ error: "already_subscribed" });
-        }
-      }
-
-      const canHaveTrial = withTrial && !user.hasUsedTrial;
-
-      const subscriptionData = {
-        metadata: {
-          email: user.email,
-          plan: "everyday",
-        },
-      };
-
-      if (canHaveTrial) {
-        subscriptionData.trial_period_days = TRIAL_DAYS;
-      }
-
-      // Create checkout session
-      const checkoutSession = await stripe.checkout.sessions.create({
-        customer: customerId,
-        payment_method_types: ["card"],
-        line_items: [
-          {
-            price: priceId,
-            quantity: 1,
-          },
-        ],
-        mode: "subscription",
-        allow_promotion_codes: true,
-        success_url: `${URL}/content?payment=success`,
-        cancel_url: `${URL}/content?payment=canceled`,
-        metadata: {
-          email: user.email,
-          plan: "everyday",
-          isTrialStart: canHaveTrial ? "true" : "false",
-        },
-        subscription_data: subscriptionData,
-        // Expire the checkout session after 30 minutes
-        expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
-      });
-
-      // Save pending checkout info and customer ID
-      await User.updateOne(
-        { email: user.email },
-        {
-          $set: {
-            stripeCustomerId: customerId,
-          },
-        },
-        { session }
-      );
-
-      await session.commitTransaction();
-
-      res.json({
-        url: checkoutSession.url,
-        hasTrial: canHaveTrial,
-      });
-    } catch (err) {
-      await session.abortTransaction();
-      console.error("Checkout session error:", err);
-      res.sendStatus(500);
-    } finally {
-      await session.endSession();
-    }
-  }
-);
-
-// Create customer portal session (manage subscription, update payment, cancel)
-app.post(
-  "/api/create-portal-session",
-  authLimiter,
-  specialAuthToken,
-  async (req, res) => {
-    try {
-      const user = req.user;
-
-      if (!user.stripeCustomerId) {
-        return res.sendStatus(404); // Frontend: no subscription found
-      }
-
-      const session = await stripe.billingPortal.sessions.create({
-        customer: user.stripeCustomerId,
-        return_url: `${URL}/content`,
-      });
-
-      res.status(200).json({ url: session.url });
-    } catch (err) {
-      console.error("Portal session error:", err);
-      res.sendStatus(500); // Frontend: Failed to create portal session
-    }
-  }
-);
-
-// Cancel subscription (at period end)
-app.post("/api/cancel-subscription", specialAuthToken, async (req, res) => {
-  try {
-    const user = req.user;
-
-    if (!user.subscription?.id) {
-      return res.sendStatus(404); // Frontend: No active subscription found
-    }
-
-    if (user.subscription.status === "trialing") {
-      await stripe.subscriptions.cancel(user.subscription.id);
-      await User.updateOne(
-        { email: user.email },
-        {
-          $set: {
-            subscription: {
-              id: null,
-              status: "canceled",
-              priceId: null,
-              currentPeriodEnd: null,
-              cancelAtPeriodEnd: false,
-              trialEnd: null,
-            },
-            hasUsedTrial: true,
-            plan: "free",
-          },
-        }
-      );
-
-      return res.sendStatus(202);
-    }
-
-    // Cancel at end of current period (user keeps access until then)
-    await stripe.subscriptions.update(user.subscription.id, {
-      cancel_at_period_end: true,
-    });
-
-    await User.updateOne(
-      { email: user.email },
-      { $set: { "subscription.cancelAtPeriodEnd": true } }
-    );
-
-    res.sendStatus(200);
-  } catch (err) {
-    console.error("Cancel subscription error:", err);
-    res.sendStatus(500); // Frontend: failed to cancel, something went wrong
-  }
-});
-
-// Reactivate canceled subscription (before period ends)
-app.post("/api/reactivate-subscription", specialAuthToken, async (req, res) => {
-  try {
-    const user = req.user;
-
-    if (!user.subscription?.id) {
-      return res.sendStatus(404); // Frontend: no subscription found to reactivate
-    }
-
-    await stripe.subscriptions.update(user.subscription.id, {
-      cancel_at_period_end: false,
-    });
-
-    await User.updateOne(
-      { email: user.email },
-      { $set: { "subscription.cancelAtPeriodEnd": false } }
-    );
-
-    res.sendStatus(200); // Frontend: subscription reactivated
-  } catch (err) {
-    console.error("Reactivate subscription error:", err);
-    res.sendStatus(500); // Frontend: failed to reactivate subscription
   }
 });
 
@@ -2119,795 +1696,6 @@ async function sendDeletionWarning(userEmail, userName, deleteDate) {
   } catch (e) {
     console.error("Deletion warning email failed:", e);
     throw new Error();
-  }
-}
-
-async function handleSubscriptionCreated(subscription) {
-  const session = await mongoose.startSession();
-  try {
-    await session.startTransaction();
-
-    const customerId = subscription.customer;
-    const freshSubscription = await stripe.subscriptions.retrieve(
-      subscription.id
-    );
-
-    const priceId = freshSubscription.items.data[0].price.id;
-    const plan = PRICE_TO_PLAN[priceId] || "free";
-    const currentPeriodEnd = freshSubscription.items.data[0].current_period_end;
-
-    const updateData = {
-      subscription: {
-        id: freshSubscription.id,
-        status: freshSubscription.status,
-        priceId: priceId,
-        currentPeriodEnd: currentPeriodEnd
-          ? new Date(currentPeriodEnd * 1000)
-          : null,
-        cancelAtPeriodEnd: freshSubscription.cancel_at_period_end,
-        trialEnd: freshSubscription.trial_end
-          ? new Date(freshSubscription.trial_end * 1000)
-          : null,
-      },
-      plan: plan,
-    };
-
-    if (freshSubscription.status === "trialing") {
-      updateData.hasUsedTrial = true;
-    }
-
-    await User.updateOne(
-      { stripeCustomerId: customerId },
-      { $set: updateData },
-      { session }
-    );
-
-    await session.commitTransaction();
-  } catch (error) {
-    console.error(error);
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    await session.endSession();
-  }
-}
-
-async function handleCheckoutComplete(checkoutSession) {
-  const session = await mongoose.startSession();
-  try {
-    await session.startTransaction();
-
-    const customerId = checkoutSession.customer;
-    const subscriptionId = checkoutSession.subscription;
-    const userEmail = checkoutSession.metadata?.email;
-    const isTrialStart = checkoutSession.metadata?.isTrialStart === "true";
-
-    if (!userEmail) {
-      console.error("No email found in checkout session");
-      await session.abortTransaction();
-      return;
-    }
-
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-    const currentPeriodEnd = subscription.items.data[0].current_period_end;
-    const priceId = subscription.items.data[0].price.id;
-    const plan = PRICE_TO_PLAN[priceId] || "free";
-
-    const updateData = {
-      stripeCustomerId: customerId,
-      subscription: {
-        id: subscriptionId,
-        status: subscription.status,
-        priceId: priceId,
-        currentPeriodEnd: currentPeriodEnd
-          ? new Date(currentPeriodEnd * 1000)
-          : null,
-        cancelAtPeriodEnd: subscription.cancel_at_period_end,
-        trialEnd: subscription.trial_end
-          ? new Date(subscription.trial_end * 1000)
-          : null,
-      },
-      plan: plan,
-    };
-
-    if (isTrialStart || subscription.status === "trialing") {
-      updateData.hasUsedTrial = true;
-    }
-
-    await User.updateOne(
-      { email: userEmail },
-      { $set: updateData },
-      { session }
-    );
-
-    await session.commitTransaction();
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    await session.endSession();
-  }
-}
-
-async function handleSubscriptionUpdate(subscription) {
-  const session = await mongoose.startSession();
-  try {
-    await session.startTransaction();
-
-    const customerId = subscription.customer;
-    const freshSubscription = await stripe.subscriptions.retrieve(
-      subscription.id
-    );
-
-    const currentPeriodEnd = freshSubscription.items.data[0].current_period_end;
-    const priceId = freshSubscription.items.data[0].price.id;
-    const plan = PRICE_TO_PLAN[priceId] || "free";
-
-    let effectivePlan = "free";
-    if (
-      freshSubscription.status === "active" ||
-      freshSubscription.status === "trialing"
-    ) {
-      effectivePlan = plan;
-    }
-
-    await User.updateOne(
-      { stripeCustomerId: customerId },
-      {
-        $set: {
-          subscription: {
-            id: freshSubscription.id,
-            status: freshSubscription.status,
-            priceId: priceId,
-            currentPeriodEnd: currentPeriodEnd
-              ? new Date(currentPeriodEnd * 1000)
-              : null,
-            cancelAtPeriodEnd: freshSubscription.cancel_at_period_end,
-            trialEnd: freshSubscription.trial_end
-              ? new Date(freshSubscription.trial_end * 1000)
-              : null,
-          },
-          plan: effectivePlan,
-        },
-      },
-      { session }
-    );
-
-    await session.commitTransaction();
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    await session.endSession();
-  }
-}
-
-async function handleSubscriptionCanceled(subscription) {
-  const session = await mongoose.startSession();
-  try {
-    await session.startTransaction();
-
-    const customerId = subscription.customer;
-
-    await User.updateOne(
-      { stripeCustomerId: customerId },
-      {
-        $set: {
-          subscription: {
-            id: null,
-            status: "canceled",
-            priceId: null,
-            currentPeriodEnd: null,
-            cancelAtPeriodEnd: false,
-            trialEnd: null,
-          },
-          plan: "free",
-        },
-      },
-      { session }
-    );
-
-    await session.commitTransaction();
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    await session.endSession();
-  }
-}
-
-async function handleTrialEnding(subscription) {
-  const session = await mongoose.startSession();
-  try {
-    await session.startTransaction();
-
-    const customerId = subscription.customer;
-    const user = await User.findOne({ stripeCustomerId: customerId }).session(
-      session
-    );
-
-    if (user) {
-      await sendTrialEndingEmail(user.email, user.name, subscription.trial_end);
-    }
-
-    await session.commitTransaction();
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    await session.endSession();
-  }
-}
-
-async function handlePaymentSucceeded(invoice) {
-  const session = await mongoose.startSession();
-  try {
-    await session.startTransaction();
-
-    const customerId = invoice.customer;
-    const subscriptionId = invoice.subscription;
-
-    if (!subscriptionId) {
-      await session.abortTransaction();
-      return;
-    }
-
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-    const currentPeriodEnd = subscription.items.data[0].current_period_end;
-    const priceId = subscription.items.data[0].price.id;
-    const plan = PRICE_TO_PLAN[priceId] || "free";
-
-    await User.updateOne(
-      { stripeCustomerId: customerId },
-      {
-        $set: {
-          subscription: {
-            id: subscriptionId,
-            status: "active",
-            priceId: priceId,
-            currentPeriodEnd: currentPeriodEnd
-              ? new Date(currentPeriodEnd * 1000)
-              : null,
-            cancelAtPeriodEnd: subscription.cancel_at_period_end,
-            trialEnd: null,
-          },
-          plan: plan,
-        },
-      },
-      { session }
-    );
-
-    await session.commitTransaction();
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    await session.endSession();
-  }
-}
-
-async function sendTrialEndingEmail(userEmail, userName, trialEndTimestamp) {
-  const trialEndDate = new Date(trialEndTimestamp * 1000).toLocaleDateString(
-    "en-US",
-    {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }
-  );
-  const manageLink = `${URL}/content`;
-
-  const mailOptions = {
-    from: `"Header App" <${process.env.EMAIL_APP}>`,
-    to: userEmail,
-    subject: "Your Header trial is ending soon",
-    html: `
-      <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Trial Ending Soon | Header</title>
-  </head>
-  <body
-    style="
-      margin: 0;
-      padding: 0;
-      background-color: #f4f7fa;
-      font-family: 'Segoe UI', Arial, sans-serif;
-    "
-  >
-    <!-- Wrapper -->
-    <table
-      role="presentation"
-      width="100%"
-      cellspacing="0"
-      cellpadding="0"
-      style="background-color: #f4f7fa; padding: 40px 20px"
-    >
-      <tr>
-        <td align="center">
-          <!-- Main Container -->
-          <table
-            role="presentation"
-            width="600"
-            cellspacing="0"
-            cellpadding="0"
-            style="
-              background-color: #ffffff;
-              border-radius: 16px;
-              overflow: hidden;
-              box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-            "
-          >
-            <!-- Header -->
-            <tr>
-              <td
-                style="
-                  background-color: #0f172a;
-                  padding: 40px 40px;
-                  text-align: center;
-                  position: relative;
-                "
-              >
-                <!-- Logo -->
-                <table
-                  role="presentation"
-                  cellspacing="0"
-                  cellpadding="0"
-                  style="margin: 0 auto 24px auto"
-                >
-                  <tr>
-                    <td>
-                      <img
-  src="https://header.news/logo.png"
-  alt="Header"
-  width="200"
-  style="display:block"
-/>
-                    </td>
-                  </tr>
-                </table>
-
-                <h1
-                  style="
-                    color: #ffffff;
-                    margin: 0;
-                    font-size: 24px;
-                    font-weight: 700;
-                    letter-spacing: -0.5px;
-                  "
-                >
-                  Your trial is ending soon
-                </h1>
-                <p
-                  style="
-                    color: rgba(255, 255, 255, 0.7);
-                    margin: 12px 0 0 0;
-                    font-size: 15px;
-                  "
-                >
-                  Just a friendly reminder about your subscription
-                </p>
-              </td>
-            </tr>
-
-            <!-- Body -->
-            <tr>
-              <td style="padding: 48px 40px">
-                <!-- Greeting -->
-                <p
-                  style="
-                    color: #0f172a;
-                    font-size: 17px;
-                    margin: 0 0 20px 0;
-                    line-height: 1.6;
-                  "
-                >
-                  Hi <strong>${userName}</strong>,
-                </p>
-
-                <p
-                  style="
-                    color: #64748b;
-                    font-size: 15px;
-                    margin: 0 0 24px 0;
-                    line-height: 1.7;
-                  "
-                >
-                  We hope you've been enjoying Header! Your free trial is ending
-                  soon and we wanted to give you a heads up.
-                </p>
-
-                <!-- Trial End Date Box -->
-                <table
-                  role="presentation"
-                  width="100%"
-                  cellspacing="0"
-                  cellpadding="0"
-                  style="margin: 0 0 32px 0"
-                >
-                  <tr>
-                    <td
-                      style="
-                        background-color: #fefce8;
-                        border: 1px solid #fef08a;
-                        border-radius: 12px;
-                        padding: 20px;
-                        text-align: center;
-                      "
-                    >
-                      <p
-                        style="
-                          color: #a16207;
-                          font-size: 13px;
-                          font-weight: 600;
-                          margin: 0 0 8px 0;
-                          text-transform: uppercase;
-                          letter-spacing: 0.5px;
-                        "
-                      >
-                        Trial Ends On
-                      </p>
-                      <p
-                        style="
-                          color: #ca8a04;
-                          font-size: 20px;
-                          font-weight: 700;
-                          margin: 0;
-                        "
-                      >
-                        ${trialEndDate}
-                      </p>
-                    </td>
-                  </tr>
-                </table>
-
-                <!-- What happens next -->
-                <table
-                  role="presentation"
-                  width="100%"
-                  cellspacing="0"
-                  cellpadding="0"
-                  style="
-                    background-color: #f8fafc;
-                    border-radius: 12px;
-                    margin-bottom: 32px;
-                  "
-                >
-                  <tr>
-                    <td style="padding: 24px">
-                      <p
-                        style="
-                          color: #0f172a;
-                          font-size: 14px;
-                          font-weight: 600;
-                          margin: 0 0 16px 0;
-                        "
-                      >
-                        What happens next:
-                      </p>
-                      <table
-                        role="presentation"
-                        cellspacing="0"
-                        cellpadding="0"
-                      >
-                        <tr>
-                          <td style="padding: 6px 0">
-                            <span style="color: #2563eb; margin-right: 10px"
-                              >✓</span
-                            >
-                            <span style="color: #64748b; font-size: 14px"
-                              >Your subscription will start automatically</span
-                            >
-                          </td>
-                        </tr>
-                        <tr>
-                          <td style="padding: 6px 0">
-                            <span style="color: #2563eb; margin-right: 10px"
-                              >✓</span
-                            >
-                            <span style="color: #64748b; font-size: 14px"
-                              >You'll officially become a paid Header user</span
-                            >
-                          </td>
-                        </tr>
-                        <tr>
-                          <td style="padding: 6px 0">
-                            <span style="color: #2563eb; margin-right: 10px"
-                              >✓</span
-                            >
-                            <span style="color: #64748b; font-size: 14px"
-                              >Continue enjoying all premium features</span
-                            >
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                </table>
-
-                <!-- Not ready section -->
-                <table
-                  role="presentation"
-                  width="100%"
-                  cellspacing="0"
-                  cellpadding="0"
-                  style="
-                    background-color: #f0fdf4;
-                    border: 1px solid #bbf7d0;
-                    border-radius: 12px;
-                    margin-bottom: 32px;
-                  "
-                >
-                  <tr>
-                    <td style="padding: 24px">
-                      <p
-                        style="
-                          color: #166534;
-                          font-size: 15px;
-                          font-weight: 600;
-                          margin: 0 0 12px 0;
-                        "
-                      >
-                        Want to continue? No action needed!
-                      </p>
-                      <p
-                        style="
-                          color: #15803d;
-                          font-size: 14px;
-                          margin: 0;
-                          line-height: 1.6;
-                        "
-                      >
-                        If you'd like to keep using Header's premium features,
-                        you don't need to do anything. Your subscription will
-                        start automatically after your trial ends.
-                      </p>
-                    </td>
-                  </tr>
-                </table>
-
-                <!-- Cancel note -->
-                <table
-                  role="presentation"
-                  width="100%"
-                  cellspacing="0"
-                  cellpadding="0"
-                  style="
-                    background-color: #fef2f2;
-                    border: 1px solid #fecaca;
-                    border-radius: 12px;
-                    margin-bottom: 32px;
-                  "
-                >
-                  <tr>
-                    <td style="padding: 24px">
-                      <p
-                        style="
-                          color: #991b1b;
-                          font-size: 15px;
-                          font-weight: 600;
-                          margin: 0 0 12px 0;
-                        "
-                      >
-                        Changed your mind?
-                      </p>
-                      <p
-                        style="
-                          color: #b91c1c;
-                          font-size: 14px;
-                          margin: 0;
-                          line-height: 1.6;
-                        "
-                      >
-                        You can cancel anytime before your trial ends. Just
-                        visit your account settings and manage your
-                        subscription.
-                      </p>
-                    </td>
-                  </tr>
-                </table>
-
-                <!-- CTA Button -->
-                <table
-                  role="presentation"
-                  cellspacing="0"
-                  cellpadding="0"
-                  style="margin: 0 auto 32px auto"
-                >
-                  <tr>
-                    <td
-                      align="center"
-                      style="background-color: #0f172a; border-radius: 12px"
-                    >
-                      <a
-                        href="${manageLink}"
-                        target="_blank"
-                        style="
-                          display: inline-block;
-                          padding: 16px 48px;
-                          color: #ffffff;
-                          font-size: 15px;
-                          font-weight: 600;
-                          text-decoration: none;
-                        "
-                      >
-                        Manage Subscription →
-                      </a>
-                    </td>
-                  </tr>
-                </table>
-
-                <!-- Alternative Link -->
-                <p style="color: #94a3b8; font-size: 13px; margin: 0 0 10px 0">
-                  Button not working? Copy and paste this link:
-                </p>
-                <p
-                  style="
-                    background-color: #f1f5f9;
-                    padding: 12px 14px;
-                    border-radius: 8px;
-                    word-break: break-all;
-                    margin: 0 0 32px 0;
-                  "
-                >
-                  <a
-                    href="${manageLink}"
-                    style="
-                      color: #2563eb;
-                      font-size: 12px;
-                      text-decoration: none;
-                    "
-                  >
-                    ${manageLink}
-                  </a>
-                </p>
-
-                <!-- Divider -->
-                <hr
-                  style="
-                    border: none;
-                    border-top: 1px solid #e2e8f0;
-                    margin: 32px 0;
-                  "
-                />
-
-                <!-- Questions -->
-                <table
-                  role="presentation"
-                  width="100%"
-                  cellspacing="0"
-                  cellpadding="0"
-                >
-                  <tr>
-                    <td style="padding: 0">
-                      <p
-                        style="
-                          color: #94a3b8;
-                          font-size: 13px;
-                          margin: 0;
-                          line-height: 1.6;
-                        "
-                      >
-                        <strong style="color: #64748b">Questions?</strong><br />
-                        If you have any questions about your subscription or
-                        need help, feel free to reach out to us at
-                        <a
-                          href="mailto:${process.env.EMAIL_APP}"
-                          style="color: #2563eb; text-decoration: none"
-                          >${process.env.EMAIL_APP}</a
-                        >.
-                      </p>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-
-            <!-- Footer -->
-            <tr>
-              <td
-                style="
-                  background-color: #0f172a;
-                  padding: 32px 40px;
-                  text-align: center;
-                "
-              >
-                <!-- Logo in footer -->
-                <table
-                  role="presentation"
-                  cellspacing="0"
-                  cellpadding="0"
-                  style="margin: 0 auto 16px auto"
-                >
-                  <tr>
-                    <td>
-                      <img
-  src="https://header.news/logo.png"
-  alt="Header"
-  width="200"
-  style="display:block"
-/>
-                    </td>
-                  </tr>
-                </table>
-
-                <p
-                  style="
-                    color: rgba(255, 255, 255, 0.5);
-                    font-size: 13px;
-                    margin: 0 0 8px 0;
-                    line-height: 1.6;
-                  "
-                >
-                  AI-powered news summaries for busy professionals and casuals
-                </p>
-
-                <p
-                  style="
-                    color: rgba(255, 255, 255, 0.3);
-                    font-size: 11px;
-                    margin: 16px 0 0 0;
-                  "
-                >
-                  © 2025 Header News. All rights reserved.
-                </p>
-              </td>
-            </tr>
-          </table>
-
-          <!-- Bottom note -->
-          <p
-            style="
-              color: #94a3b8;
-              font-size: 11px;
-              margin: 20px 0 0 0;
-              text-align: center;
-            "
-          >
-            This is an automated reminder about your Header trial subscription.
-          </p>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>
-
-    `,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-  } catch (e) {
-    console.error("Trial ending email failed:", e);
-  }
-}
-
-async function handlePaymentFailed(invoice) {
-  const session = await mongoose.startSession();
-  try {
-    await session.startTransaction();
-
-    const customerId = invoice.customer;
-
-    await User.updateOne(
-      { stripeCustomerId: customerId },
-      {
-        $set: {
-          "subscription.status": "past_due",
-        },
-      },
-      { session }
-    );
-
-    await session.commitTransaction();
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    await session.endSession();
   }
 }
 
