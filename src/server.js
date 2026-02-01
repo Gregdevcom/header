@@ -19,6 +19,7 @@ import {
   validatePass,
   validateName,
   validateEmail,
+  validateLogin,
 } from "./validators.js";
 import { generalLimiter, authLimiter } from "./rateLimiters.js";
 import NodeCache from "node-cache";
@@ -440,8 +441,7 @@ app.get("/log-in", async (req, res) => {
   }
 });
 
-app.post("/log-in", authLimiter, validateEmail, async (req, res) => {
-  // Added validation
+app.post("/log-in", authLimiter, validateLogin, async (req, res) => {
   const session = await mongoose.startSession();
 
   try {

@@ -134,3 +134,33 @@ export const validateEmail = (req, res, next) => {
   req.body = result.data;
   next();
 };
+
+export const loginSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1, "Email is required")
+    .max(254, "Email is too long")
+    .email("Invalid email format"),
+  password: z
+    .string()
+    .min(1, "Password is required")
+    .max(200, "Password is too long."),
+});
+
+export const validateLogin = (req, res, next) => {
+  const result = loginSchema.safeParse(req.body);
+
+  if (!result.success) {
+    const errors = result.error.issues.map((e) => ({
+      field: e.path[0],
+      message: e.message,
+    }));
+
+    return res.status(422).json(errors);
+  }
+
+  req.body = result.data;
+  next();
+};
