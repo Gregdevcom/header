@@ -1130,11 +1130,7 @@ app.get("/change-pass", (req, res) => {
 });
 
 app.get("/content", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "public", "dash.html"));
-});
-
-app.get("/pricing", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "public", "pricing.html"));
+  res.sendFile(path.join(__dirname, "..", "public", "app.html"));
 });
 
 // Pre 404:
