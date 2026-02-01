@@ -128,7 +128,7 @@ export const validateEmail = (req, res, next) => {
       message: e.message,
     }));
 
-    return res.status(400).json(errors);
+    return res.status(422).json(errors);
   }
 
   req.body = result.data;
