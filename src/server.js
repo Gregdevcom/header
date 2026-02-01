@@ -461,7 +461,6 @@ app.post("/log-in", authLimiter, validateEmail, async (req, res) => {
           expiresIn: "10m",
         }
       );
-
       const refreshToken = jwt.sign(
         { email: matches.email },
         process.env.REFRESH_TOKEN_SECRET,
@@ -1024,30 +1023,25 @@ app.post(
   }
 );
 
-app.post(
-  "/api/refresh/feedback",
-  specialAuthToken,
-  validateObjectId("articleId"),
-  async (req, res) => {
-    const data = req.body;
+app.post("/api/refresh/feedback", specialAuthToken, async (req, res) => {
+  const data = req.body;
 
-    if (!data.type || (data.type === "other" && !data.details)) {
-      return res.sendStatus(400);
-    }
-
-    const feedbackTicket = await Feedback.create({
-      type: data.type,
-      details: data.details ? data.details : null,
-      email: data.email,
-    });
-
-    if (feedbackTicket) {
-      res.sendStatus(200);
-    } else {
-      res.sendStatus(500);
-    }
+  if (!data.type || (data.type === "other" && !data.details)) {
+    return res.sendStatus(400);
   }
-);
+
+  const feedbackTicket = await Feedback.create({
+    type: data.type,
+    details: data.details ? data.details : null,
+    email: data.email,
+  });
+
+  if (feedbackTicket) {
+    res.sendStatus(200);
+  } else {
+    res.sendStatus(500);
+  }
+});
 
 app.post(
   "/api/refresh/update-name",
