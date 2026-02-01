@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 - Page Not Found | Auris</title>
+    <link rel="icon" href="Auris.png" type="image/x-icon" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Ephesis&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        overscroll-behavior: none;
+      }
+
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: linear-gradient(160deg, #1a1a2e, #16213e, #0f3460);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow-x: hidden;
+        padding: 20px;
+      }
+
+      /* Main card */
+      .card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 30px;
+        padding: 50px 40px;
+        width: 100%;
+        max-width: 420px;
+        animation: cardEntry 0.6s ease-out;
+        text-align: center;
+      }
+
+      @keyframes cardEntry {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Header */
+      .header {
+        margin-bottom: 35px;
+        font-family: "Ephesis", cursive;
+        font-weight: 400;
+      }
+
+      .logo {
+        font-size: 49px;
+        font-weight: 300;
+        letter-spacing: 2px;
+        color: #fff;
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 8px;
+      }
+
+      /* Error code */
+      .error-code {
+        font-size: 120px;
+        font-weight: 200;
+        color: rgba(255, 255, 255, 0.08);
+        line-height: 1;
+        margin-bottom: 10px;
+        letter-spacing: -5px;
+        animation: glow 3s ease-in-out infinite;
+        animation: float 3s ease-in-out infinite;
+      }
+
+      @keyframes glow {
+        0%,
+        100% {
+          color: rgba(255, 255, 255, 0.08);
+          text-shadow: none;
+        }
+        50% {
+          color: rgba(255, 255, 255, 0.12);
+          text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+        }
+      }
+
+      .subtitle {
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        margin-bottom: 20px;
+      }
+
+      .description {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 30px;
+      }
+
+      /* Icon container */
+      .icon-container {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+        animation: float 3s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+
+      .icon-container i {
+        font-size: 36px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      /* Primary button - glass morphism */
+      .primary-btn {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: rgba(255, 255, 255, 0.9);
+        padding: 16px 32px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-family: inherit;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-decoration: none;
+      }
+
+      .primary-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+      }
+
+      .primary-btn:active {
+        transform: translateY(0);
+      }
+
+      .primary-btn i {
+        font-size: 18px;
+      }
+
+      /* Suggestions */
+      .suggestions {
+        margin-top: 35px;
+        padding-top: 25px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .suggestions h4 {
+        font-size: 11px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 18px;
+      }
+
+      .suggestions-list {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .suggestion-link {
+        color: rgba(255, 255, 255, 0.5);
+        text-decoration: none;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 16px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all 0.3s ease;
+      }
+
+      .suggestion-link:hover {
+        color: rgba(255, 255, 255, 0.9);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+      }
+
+      .suggestion-link i {
+        font-size: 16px;
+      }
+
+      /* Responsive */
+      @media (max-width: 500px) {
+        body {
+          padding: 16px;
+        }
+
+        .card {
+          padding: 40px 28px;
+          border-radius: 24px;
+        }
+
+        .logo {
+          font-size: 24px;
+        }
+
+        .error-code {
+          font-size: 90px;
+          letter-spacing: -3px;
+        }
+
+        .icon-container {
+          width: 70px;
+          height: 70px;
+        }
+
+        .icon-container i {
+          font-size: 30px;
+        }
+
+        .suggestions-list {
+          flex-direction: column;
+        }
+
+        .suggestion-link {
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="header">
+        <a href="/" class="logo">Auris</a>
+      </div>
+
+      <div class="error-code">404</div>
+
+      <p class="subtitle">Page Not Found</p>
+
+      <p class="description">
+        Oops! The page you're looking for doesn't exist or has been moved. Let's
+        get you back on track.
+      </p>
+
+      <a href="/content" class="primary-btn">
+        <i class="ph ph-house"></i>
+        Back to Home
+      </a>
+
+      <div class="suggestions">
+        <h4>Quick Links</h4>
+        <div class="suggestions-list">
+          <a href="/sign-up" class="suggestion-link">
+            <i class="ph ph-user-plus"></i>
+            Sign Up
+          </a>
+          <a href="mailto:team@header.news" class="suggestion-link">
+            <i class="ph ph-headset"></i>
+            Support
+          </a>
+          <a href="/log-in" class="suggestion-link">
+            <i class="ph ph-sign-in"></i>
+            Log In
+          </a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
