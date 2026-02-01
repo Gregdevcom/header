@@ -76,7 +76,6 @@
         font-family: "Ephesis", cursive;
         font-weight: 400;
         font-size: 38px;
-        font-weight: 300;
         letter-spacing: 2px;
         color: #fff;
         text-decoration: none;
@@ -528,6 +527,15 @@
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="ph ph-spinner"></i> Signing in...';
 
+        if (!data.email.trim() || !data.password.trim()) {
+          errorMsgElem.innerHTML =
+            '<i class="ph ph-warning-circle"></i><span>Fields cannot be blank.</span>';
+          errorMsgElem.classList.add("show");
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Sign In <i class="ph ph-arrow-right"></i>';
+          return;
+        }
+
         try {
           const response = await fetch("/log-in", {
             method: "POST",
@@ -545,6 +553,10 @@
           } else if (response.status === 400) {
             errorMsgElem.innerHTML =
               '<i class="ph ph-warning-circle"></i><span>This account can\'t be accessed with Google. Please sign in using your original method.</span>';
+            errorMsgElem.classList.add("show");
+          } else if (response.status === 422) {
+            errorMsgElem.innerHTML =
+              '<i class="ph ph-warning-circle"></i><span>Please enter a valid email address.</span>';
             errorMsgElem.classList.add("show");
           } else {
             errorMsgElem.innerHTML =
