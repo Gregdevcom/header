@@ -5,336 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Resend Verification | Header</title>
     <link rel="icon" href="HeaDer.png" type="image/x-icon" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css"
     />
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css"
+    />
     <style>
-      :root {
-        --primary: #2563eb;
-        --primary-dark: #4669e5;
-        --primary-light: #81a7f8;
-        --accent: #5575f7;
-        --accent-light: #84befc;
-        --dark: #0a0a0f;
-        --dark-soft: #13131a;
-        --card-bg: rgba(20, 20, 30, 0.8);
-        --text-primary: #f8fafc;
-        --text-secondary: #94a3b8;
-        --text-muted: #64748b;
-        --border: rgba(255, 255, 255, 0.08);
-        --border-focus: rgba(99, 102, 241, 0.5);
-        --error: #f43f5e;
-        --success: #10b981;
-        --warning: #f59e0b;
-      }
-
       * {
+        box-sizing: border-box;
         margin: 0;
         padding: 0;
-        box-sizing: border-box;
+      }
+
+      html {
+        overscroll-behavior: none;
       }
 
       body {
-        font-family: "Inter", sans-serif;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: linear-gradient(160deg, #1a1a2e, #16213e, #0f3460);
         min-height: 100vh;
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 40px 20px;
-        background: var(--dark);
-        position: relative;
         overflow-x: hidden;
-      }
-
-      /* Mesh gradient background */
-      .bg-mesh {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: radial-gradient(
-            ellipse 80% 50% at 20% -10%,
-            rgba(15, 55, 141, 0.25) 0%,
-            transparent 50%
-          ),
-          radial-gradient(
-            ellipse 60% 40% at 80% 100%,
-            rgba(22, 42, 131, 0.2) 0%,
-            transparent 50%
-          ),
-          radial-gradient(
-            ellipse 50% 30% at 50% 50%,
-            rgba(13, 37, 109, 0.05) 0%,
-            transparent 50%
-          );
-      }
-
-      /* Animated aurora effect */
-      .aurora {
-        position: fixed;
-        top: -50%;
-        left: -50%;
-        right: -50%;
-        bottom: -50%;
-        background: conic-gradient(
-          from 180deg at 50% 50%,
-          transparent 0deg,
-          rgba(99, 102, 241, 0.03) 60deg,
-          transparent 120deg,
-          rgba(168, 85, 247, 0.03) 180deg,
-          transparent 240deg,
-          rgba(99, 102, 241, 0.03) 300deg,
-          transparent 360deg
-        );
-        animation: auroraRotate 60s linear infinite;
-      }
-
-      @keyframes auroraRotate {
-        from {
-          transform: rotate(0deg);
-        }
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* Floating particles */
-      .particles {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        overflow: hidden;
-        pointer-events: none;
-      }
-
-      .particle {
-        position: absolute;
-        width: 2px;
-        height: 2px;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        animation: particleFloat 20s linear infinite;
-      }
-
-      .particle:nth-child(1) {
-        left: 10%;
-        animation-delay: 0s;
-        animation-duration: 25s;
-      }
-      .particle:nth-child(2) {
-        left: 20%;
-        animation-delay: -5s;
-        animation-duration: 20s;
-      }
-      .particle:nth-child(3) {
-        left: 30%;
-        animation-delay: -10s;
-        animation-duration: 28s;
-      }
-      .particle:nth-child(4) {
-        left: 40%;
-        animation-delay: -15s;
-        animation-duration: 22s;
-      }
-      .particle:nth-child(5) {
-        left: 50%;
-        animation-delay: -2s;
-        animation-duration: 26s;
-      }
-      .particle:nth-child(6) {
-        left: 60%;
-        animation-delay: -8s;
-        animation-duration: 24s;
-      }
-      .particle:nth-child(7) {
-        left: 70%;
-        animation-delay: -12s;
-        animation-duration: 21s;
-      }
-      .particle:nth-child(8) {
-        left: 80%;
-        animation-delay: -18s;
-        animation-duration: 27s;
-      }
-      .particle:nth-child(9) {
-        left: 90%;
-        animation-delay: -4s;
-        animation-duration: 23s;
-      }
-
-      @keyframes particleFloat {
-        0% {
-          transform: translateY(100vh) scale(0);
-          opacity: 0;
-        }
-        10% {
-          opacity: 1;
-          transform: translateY(90vh) scale(1);
-        }
-        90% {
-          opacity: 1;
-        }
-        100% {
-          transform: translateY(-10vh) scale(0.5);
-          opacity: 0;
-        }
+        padding: 20px;
       }
 
       /* Main card */
       .card {
-        position: relative;
-        z-index: 10;
-        background: var(--card-bg);
-        backdrop-filter: blur(40px);
-        -webkit-backdrop-filter: blur(40px);
-        padding: 48px 44px;
-        border-radius: 28px;
-        border: 1px solid var(--border);
-        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-          0 25px 50px -12px rgba(0, 0, 0, 0.5),
-          0 0 100px rgba(99, 102, 241, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 30px;
+        padding: 50px 40px;
         width: 100%;
         max-width: 420px;
-        animation: cardEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      .card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 60%;
-        height: 1px;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(255, 255, 255, 0.2),
-          transparent
-        );
+        animation: cardEntry 0.6s ease-out;
       }
 
       @keyframes cardEntry {
         from {
           opacity: 0;
-          transform: translateY(30px) scale(0.96);
+          transform: translateY(20px);
         }
         to {
           opacity: 1;
-          transform: translateY(0) scale(1);
+          transform: translateY(0);
         }
       }
 
       /* Header */
       .header {
         text-align: center;
-        margin-bottom: 36px;
+        margin-bottom: 35px;
       }
 
-      .logo-spark {
-        font-size: 1.5rem;
-        font-weight: 800;
-        letter-spacing: -0.03em;
-        color: var(--text-primary);
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
+      .logo {
+        font-size: 28px;
+        font-weight: 300;
+        letter-spacing: 2px;
+        color: #fff;
         text-decoration: none;
-        margin-bottom: 28px;
-        transition: transform 0.3s ease;
-      }
-
-      .logo-spark:hover {
-        transform: scale(1.03);
-      }
-
-      .logo-spark i {
-        font-size: 20px;
-        color: #2563eb;
+        display: inline-block;
         margin-bottom: 8px;
-        animation: sparkle 2s ease-in-out infinite;
-      }
-
-      @keyframes sparkle {
-        0%,
-        100% {
-          opacity: 0.7;
-          transform: rotate(0deg) scale(1);
-        }
-        50% {
-          opacity: 1;
-          transform: rotate(10deg) scale(1.1);
-        }
-      }
-
-      /* Icon container */
-      .icon-container {
-        width: 72px;
-        height: 72px;
-        margin: 0 auto 24px;
-        background: linear-gradient(135deg, var(--primary), var(--accent));
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        animation: iconPulse 3s ease-in-out infinite;
-      }
-
-      .icon-container::before {
-        content: "";
-        position: absolute;
-        inset: -2px;
-        background: linear-gradient(135deg, var(--primary), var(--accent));
-        border-radius: 22px;
-        z-index: -1;
-        opacity: 0.5;
-        filter: blur(12px);
-      }
-
-      .icon-container i {
-        font-size: 32px;
-        color: white;
-      }
-
-      @keyframes iconPulse {
-        0%,
-        100% {
-          box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
-        }
-        50% {
-          box-shadow: 0 0 0 12px rgba(99, 102, 241, 0);
-        }
-      }
-
-      /* Success icon container */
-      .icon-container.success {
-        background: linear-gradient(135deg, var(--success), #34d399);
-        animation: none;
-      }
-
-      .icon-container.success::before {
-        background: linear-gradient(135deg, var(--success), #34d399);
-      }
-
-      h2 {
-        font-size: 1.6rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 30px;
-        letter-spacing: -0.02em;
       }
 
       .subtitle {
-        color: var(--text-secondary);
-        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        margin-bottom: 20px;
+      }
+
+      .description {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 14px;
         line-height: 1.6;
       }
 
@@ -342,7 +94,7 @@
       form {
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 22px;
       }
 
       .input-group {
@@ -352,11 +104,11 @@
       }
 
       label {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--text-secondary);
+        font-size: 11px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.5);
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 2px;
       }
 
       .input-wrapper {
@@ -368,7 +120,7 @@
         left: 16px;
         top: 50%;
         transform: translateY(-50%);
-        color: var(--text-muted);
+        color: rgba(255, 255, 255, 0.3);
         font-size: 20px;
         transition: color 0.3s;
       }
@@ -376,49 +128,44 @@
       input {
         width: 100%;
         padding: 16px 16px 16px 50px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        font-size: 0.95rem;
-        color: var(--text-primary);
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        font-size: 15px;
+        color: #fff;
         transition: all 0.3s ease;
         outline: none;
         font-family: inherit;
       }
 
       input:focus {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: var(--border-focus);
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        background: rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.25);
       }
 
       .input-wrapper:focus-within i.input-icon {
-        color: var(--primary-light);
+        color: rgba(255, 255, 255, 0.6);
       }
 
       input::placeholder {
-        color: var(--text-muted);
+        color: rgba(255, 255, 255, 0.3);
       }
 
       /* Input states */
       .input-group.error input {
-        border-color: var(--error);
-        background: rgba(244, 63, 94, 0.05);
-      }
-
-      .input-group.error input:focus {
-        box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.15);
+        border-color: #ff4757;
+        background: rgba(255, 71, 87, 0.1);
       }
 
       .input-group.error .input-icon {
-        color: var(--error) !important;
+        color: #ff4757 !important;
       }
 
       /* Field error */
       .field-error {
         display: none;
-        font-size: 0.8rem;
-        color: var(--error);
+        font-size: 12px;
+        color: #ff6b81;
         margin-top: 8px;
         animation: slideIn 0.3s ease;
       }
@@ -438,51 +185,32 @@
         }
       }
 
-      /* Submit button */
+      /* Submit button - glass morphism */
       .primary-btn {
-        background: linear-gradient(
-          135deg,
-          var(--primary) 0%,
-          var(--accent) 100%
-        );
-        color: white;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: rgba(255, 255, 255, 0.9);
         padding: 16px 24px;
-        border-radius: 14px;
-        font-size: 0.95rem;
-        font-weight: 600;
-        border: none;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 500;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        margin-top: 8px;
+        transition: all 0.3s ease;
+        margin-top: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 10px;
         font-family: inherit;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .primary-btn::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.2) 0%,
-          transparent 50%
-        );
-        opacity: 0;
-        transition: opacity 0.3s;
-      }
-
-      .primary-btn:hover::before {
-        opacity: 1;
+        letter-spacing: 2px;
+        text-transform: uppercase;
       }
 
       .primary-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
         transform: translateY(-2px);
-        box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4);
       }
 
       .primary-btn:active {
@@ -490,31 +218,38 @@
       }
 
       .primary-btn:disabled {
-        opacity: 0.5;
+        opacity: 0.4;
         cursor: not-allowed;
         transform: none;
-        box-shadow: none;
       }
 
       .primary-btn i {
-        font-size: 20px;
+        font-size: 18px;
       }
 
-      /* Messages */
+      /* Error message */
       .errorMsg {
         display: none;
         padding: 14px 18px;
         border-radius: 12px;
-        font-size: 0.85rem;
+        font-size: 13px;
         margin-top: 20px;
         align-items: center;
-        justify-content: center;
         gap: 10px;
-        text-align: center;
+        text-align: left;
         animation: messageIn 0.4s ease;
-        background: rgba(244, 63, 94, 0.1);
-        border: 1px solid rgba(244, 63, 94, 0.2);
-        color: #fda4af;
+        background: rgba(255, 71, 87, 0.15);
+        border: 1px solid rgba(255, 71, 87, 0.3);
+        color: #ff6b81;
+      }
+
+      .errorMsg.show {
+        display: flex;
+      }
+
+      .errorMsg i {
+        font-size: 18px;
+        flex-shrink: 0;
       }
 
       @keyframes messageIn {
@@ -528,20 +263,11 @@
         }
       }
 
-      .errorMsg.show {
-        display: flex;
-      }
-
-      .errorMsg i {
-        font-size: 18px;
-        flex-shrink: 0;
-      }
-
       /* Success state */
       .success-state {
         display: none;
         text-align: center;
-        animation: successFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        animation: successFadeIn 0.6s ease-out;
       }
 
       .success-state.show {
@@ -559,77 +285,64 @@
         }
       }
 
-      .success-state .icon-container {
-        animation: successBounce 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      @keyframes successBounce {
-        0% {
-          transform: scale(0);
-        }
-        50% {
-          transform: scale(1.1);
-        }
-        100% {
-          transform: scale(1);
-        }
-      }
-
-      .success-state h2 {
-        color: var(--success);
-        margin-bottom: 16px;
-      }
-
       .success-state .subtitle {
-        margin-bottom: 24px;
+        color: #2ed573;
       }
 
+      .success-state .description {
+        margin-bottom: 25px;
+      }
+
+      /* Success notes */
       .success-notes {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid var(--success);
-        border-radius: 14px;
-        padding: 20px;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(46, 213, 115, 0.3);
+        border-radius: 16px;
+        padding: 24px;
         text-align: left;
       }
 
       .success-notes h4 {
-        font-size: 0.85rem;
+        font-size: 12px;
         font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 12px;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 16px;
         display: flex;
         align-items: center;
         gap: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
       }
 
       .success-notes h4 i {
-        color: var(--primary-light);
+        color: #2ed573;
+        font-size: 16px;
       }
 
       .success-notes ul {
         list-style: none;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
       }
 
       .success-notes li {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.5);
         display: flex;
         align-items: flex-start;
-        gap: 10px;
+        gap: 12px;
         line-height: 1.5;
       }
 
       .success-notes li i {
-        color: var(--text-muted);
+        color: rgba(255, 255, 255, 0.3);
         font-size: 16px;
         margin-top: 2px;
         flex-shrink: 0;
       }
 
-      /* Form state */
+      /* Form state transitions */
       .form-state {
         transition: opacity 0.3s ease, transform 0.3s ease;
       }
@@ -641,20 +354,20 @@
 
       /* Back link */
       .back-link {
-        margin-top: 28px;
+        margin-top: 30px;
         text-align: center;
-        padding-top: 24px;
-        border-top: 1px solid var(--border);
+        padding-top: 25px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
       }
 
       .link-btn {
         background: none;
         border: none;
-        color: var(--text-secondary);
+        color: rgba(255, 255, 255, 0.5);
         font-weight: 500;
         cursor: pointer;
         font-family: inherit;
-        font-size: 0.85rem;
+        font-size: 13px;
         padding: 8px 16px;
         border-radius: 8px;
         display: inline-flex;
@@ -664,7 +377,7 @@
       }
 
       .link-btn:hover {
-        color: var(--text-primary);
+        color: #fff;
         background: rgba(255, 255, 255, 0.05);
       }
 
@@ -677,7 +390,7 @@
         transform: translateX(-3px);
       }
 
-      /* Spinner animation */
+      /* Spinner */
       @keyframes spin {
         to {
           transform: rotate(360deg);
@@ -691,60 +404,33 @@
       /* Responsive */
       @media (max-width: 500px) {
         body {
-          padding: 20px 16px;
+          padding: 16px;
         }
 
         .card {
-          padding: 36px 24px;
+          padding: 40px 28px;
+          border-radius: 24px;
         }
 
-        h2 {
-          font-size: 1.4rem;
-        }
-
-        .icon-container {
-          width: 64px;
-          height: 64px;
-          border-radius: 18px;
-        }
-
-        .icon-container i {
-          font-size: 28px;
+        .logo {
+          font-size: 24px;
         }
 
         .success-notes {
-          padding: 16px;
+          padding: 20px;
         }
       }
     </style>
   </head>
   <body>
-    <!-- Background effects -->
-    <div class="bg-mesh"></div>
-    <div class="aurora"></div>
-    <div class="particles">
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-    </div>
-
     <!-- Main card -->
     <div class="card">
       <!-- Form State -->
       <div id="formState" class="form-state">
         <div class="header">
-          <a href="/" class="logo-spark">
-            Header<i class="ph-fill ph-sparkle"></i>
-          </a>
-
-          <h2>Resend Verification Email</h2>
-          <p class="subtitle">
+          <a href="/" class="logo">Header</a>
+          <p class="subtitle">Verify Email</p>
+          <p class="description">
             Didn't receive the verification email? Enter your email address and
             we'll send you a new one.
           </p>
@@ -768,7 +454,7 @@
 
           <button type="submit" class="primary-btn" id="submitBtn">
             <i class="ph ph-paper-plane-tilt"></i>
-            Send Verification Email
+            Send Email
           </button>
         </form>
 
@@ -781,12 +467,9 @@
       <!-- Success State -->
       <div id="successState" class="success-state">
         <div class="header">
-          <a href="/" class="logo-spark">
-            Header<i class="ph-fill ph-sparkle"></i>
-          </a>
-
-          <h2>Verification Email Sent!</h2>
-          <p class="subtitle">
+          <a href="/" class="logo">Header</a>
+          <p class="subtitle">Email Sent</p>
+          <p class="description">
             We've sent a verification link to your email address. Please check
             your inbox to complete your registration.
           </p>
@@ -935,7 +618,7 @@
         } finally {
           submitBtn.disabled = false;
           submitBtn.innerHTML =
-            '<i class="ph ph-paper-plane-tilt"></i> Send Verification Email';
+            '<i class="ph ph-paper-plane-tilt"></i> Send Email';
         }
       });
     </script>
